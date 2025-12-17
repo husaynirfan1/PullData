@@ -7,11 +7,12 @@ Provides text embedding using transformer models:
 - Batch processing support
 """
 
-# Will be populated as we implement:
-# from pulldata.embedding.embedder import Embedder
-# from pulldata.embedding.cache import EmbeddingCache
+from pulldata.embedding.cache import EmbeddingCache, InMemoryCache
+from pulldata.embedding.embedder import Embedder, load_embedder
 
 __all__ = [
-    # "Embedder",
-    # "EmbeddingCache",
+    "Embedder",
+    "load_embedder",
+    "EmbeddingCache",
+    "InMemoryCache",
 ]
