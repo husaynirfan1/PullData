@@ -1,161 +1,95 @@
-"""LM Studio with API Embeddings Example.
+"""LM Studio API Embeddings - Full Demo
 
-This example shows how to use LM Studio for BOTH:
-- Embeddings (via API)
-- LLM (via API)
+Demonstrates LM Studio API embeddings with document ingestion and querying.
 
-This is useful if you want all inference to go through LM Studio.
+Prerequisites:
+1. Install LM Studio from https://lmstudio.ai
+2. Load an embedding model (e.g., nomic-embed-text-v1.5)
+3. Load an LLM model (e.g., Qwen2.5-3B-Instruct)
+4. Start LM Studio server
 """
 
+from pathlib import Path
 from pulldata import PullData
 
+
+def create_sample_document():
+    """Create a sample text document."""
+    sample_dir = Path("./sample_data")
+    sample_dir.mkdir(exist_ok=True)
+    
+    sample_file = sample_dir / "ml_intro.txt"
+    sample_file.write_text("""Machine Learning Overview
+
+Machine learning is a branch of artificial intelligence that enables computers to learn from data.
+
+Key Types:
+1. Supervised Learning - Learning from labeled examples
+2. Unsupervised Learning - Finding patterns in unlabeled data  
+3. Reinforcement Learning - Learning through trial and error
+
+Applications include image recognition, natural language processing, and recommendation systems.
+""", encoding='utf-8')
+    return sample_file
+
+
 def main():
-    """LM Studio with API embeddings example."""
     print("=" * 60)
-    print("LM Studio with API Embeddings Example")
+    print("LM Studio API Embeddings - Full Demo")
     print("=" * 60)
     
-    print("\nPrerequisites:")
-    print("1. Install LM Studio from https://lmstudio.ai/")
-    print("2. Download an embedding model (e.g., nomic-embed-text-v1.5)")
-    print("3. Download an LLM (e.g., Qwen2.5-3B-Instruct)")
-    print("4. Load BOTH models in LM Studio")
-    print("5. Start the LM Studio server")
+    # Create sample document
+    print("\n[1/4] Creating sample document...")
+    sample_file = create_sample_document()
+    print(f"      Created: {sample_file}")
     
-    print("\n" + "-" * 60)
-    print("CONFIGURATION OPTIONS:")
-    print("-" * 60)
+    # Initialize
+    print("\n[2/4] Initializing PullData...")
+    config_path = Path(__file__).parent.parent / "configs" / "lm_studio_api_embeddings.yaml"
     
-    print("\nOption 1: Use config file")
-    print("-" * 40)
-    print("""
-pd = PullData(
-    project="my_project",
-    config_path="configs/lm_studio_api_embeddings.yaml"
-)
-""")
+    try:
+        pd = PullData(
+            project="lm_studio_demo",
+            config_path=str(config_path)
+        )
+        print(f"      API Embedder: {pd.config.models.embedder.api.model}")
+        print(f"      LLM: {pd.config.models.llm.api.model}")
+        
+    except Exception as e:
+        print(f"      [FAILED] {e}")
+        return
     
-    print("\nOption 2: Config overrides in code")
-    print("-" * 40)
+    # Ingest
+    print("\n[3/4] Ingesting document...")
+    try:
+        stats = pd.ingest(str(sample_file))
+        print(f"      Processed: {stats.get('processed_files', 0)} files")
+        print(f"      Chunks: {stats.get('new_chunks', 0)}")
+    except Exception as e:
+        print(f"      [FAILED] {e}")
+        pd.close()
+        return
     
-    pd = PullData(
-        project="lm_studio_api_demo",
-        storage={"backend": "local"},
-        models={
-            # API Embeddings via LM Studio
-            "embedder": {
-                "provider": "api",  # Use API
-                "dimension": 768,  # Adjust for your model
-                "api": {
-                    "base_url": "http://localhost:1234/v1",
-                    "api_key": "lm-studio",
-                    "model": "nomic-embed-text-v1.5",
-                    "batch_size": 100,
-                }
-            },
-            # LLM via LM Studio
-            "llm": {
-                "provider": "api",
-                "api": {
-                    "base_url": "http://localhost:1234/v1",
-                    "api_key": "lm-studio",
-                    "model": "local-model",
-                }
-            }
-        }
-    )
+    # Query  
+    print("\n[4/4] Querying...")
     
-    print("\nConfiguration set:")
-    print("  Embeddings: LM Studio API (nomic-embed-text-v1.5)")
-    print("  LLM: LM Studio API")
-    print("  Storage: Local (SQLite + FAISS)")
+    # Debug: Check vector store
+    vec_size = pd._vector_store.index.ntotal if hasattr(pd._vector_store.index, 'ntotal') else 0
+    print(f"      Debug: Vector store size = {vec_size}")
+    print(f"      Debug: Metadata chunks = {pd._metadata_store.get_stats()['chunk_count']}")
     
-    print("\n" + "-" * 60)
-    print("RECOMMENDED EMBEDDING MODELS FOR LM STUDIO:")
-    print("-" * 60)
-    
-    print("""
-1. nomic-embed-text-v1.5 (768D)
-   - Good general-purpose embedding
-   - Recommended for most use cases
-   
-2. bge-large-en-v1.5 (1024D)
-   - Higher quality, larger dimension
-   - Better for complex documents
-   
-3. e5-mistral-7b-instruct (4096D)
-   - Very high quality
-   - Requires more resources
-""")
-    
-    print("\n" + "-" * 60)
-    print("USAGE EXAMPLE:")
-    print("-" * 60)
-    
-    print("""
-# Ingest documents (embeddings via LM Studio API)
-stats = pd.ingest("./documents/*.pdf")
-
-# Query (both retrieval and answer via LM Studio)
-result = pd.query(
-    "What are the key findings?",
-    generate_answer=True,
-    k=5
-)
-
-print(f"Answer: {result.answer}")
-print(f"Sources: {len(result.sources)}")
-""")
-    
-    print("\n" + "-" * 60)
-    print("LOCAL vs API EMBEDDINGS:")
-    print("-" * 60)
-    
-    print("""
-LOCAL Embeddings (sentence-transformers):
-  ✓ Free (no API costs)
-  ✓ Fast for batch processing
-  ✓ No network latency
-  ✓ Full privacy
-  ✗ Requires local setup
-
-API Embeddings (LM Studio):
-  ✓ Easy setup (just load model)
-  ✓ Centralized model management
-  ✓ Switch models easily in LM Studio UI
-  ✗ Slower for large batches (network calls)
-  ✗ LM Studio must be running
-  
-Recommendation: Use LOCAL for embeddings unless you specifically
-want all inference through LM Studio or prefer the UI.
-""")
-    
-    print("\n" + "-" * 60)
-    print("MIXED CONFIGURATION:")
-    print("-" * 60)
-    
-    print("""
-You can also mix local and API:
-
-models:
-  embedder:
-    provider: local  # Local embeddings
-    name: BAAI/bge-small-en-v1.5
-    device: cpu
-    
-  llm:
-    provider: api  # LM Studio for LLM
-    api:
-      base_url: http://localhost:1234/v1
-      model: local-model
-
-This gives you the best of both worlds!
-""")
+    try:
+        result = pd.query("What are the types of machine learning?", generate_answer=True)
+        answer = result.llm_response.text if result.llm_response else "No answer generated"
+        print(f"      Answer: {answer}")
+        print(f"      Sources: {len(result.retrieved_chunks)}")
+    except Exception as e:
+        print(f"      [FAILED] {e}")
     
     pd.close()
     
     print("\n" + "=" * 60)
-    print("Configuration guide complete!")
+    print("Demo Complete!")
     print("=" * 60)
 
 

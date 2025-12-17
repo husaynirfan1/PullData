@@ -1,0 +1,10 @@
+Machine Learning Overview
+
+Machine learning is a branch of artificial intelligence that enables computers to learn from data.
+
+Key Types:
+1. Supervised Learning - Learning from labeled examples
+2. Unsupervised Learning - Finding patterns in unlabeled data  
+3. Reinforcement Learning - Learning through trial and error
+
+Applications include image recognition, natural language processing, and recommendation systems.
