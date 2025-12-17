@@ -1,0 +1,105 @@
+{
+  "content": "\n        **Executive Summary**\n        \n        Q3 2024 demonstrated strong financial performance with revenue \n        growth of 15% year-over-year and improved profit margins.\n        \n        **Key Metrics:**\n        - Total Revenue: $10.5M (+15% YoY)\n        - Operating Expenses: $8.2M (-5% QoQ)\n        - Net Profit: $2.3M (+35% YoY)\n        - Profit Margin: 22%\n        \n        The company continues to show healthy growth across all segments.\n        ",
+  "metadata": {
+    "author": "Finance Team",
+    "classification": "Internal",
+    "company": "Demo Corp",
+    "date": "2024-12-18",
+    "department": "Finance"
+  },
+  "sections": [
+    {
+      "content": "Product sales led growth at $6.5M, followed by services at $4.0M.",
+      "title": "Revenue Analysis"
+    },
+    {
+      "content": "Operational efficiency improvements resulted in 5% cost reduction.",
+      "title": "Cost Analysis"
+    }
+  ],
+  "sources": [
+    {
+      "document_id": "q3_financial_report.pdf",
+      "page_number": 1,
+      "score": 0.95
+    },
+    {
+      "document_id": "q3_financial_report.pdf",
+      "page_number": 5,
+      "score": 0.88
+    },
+    {
+      "document_id": "regional_analysis.pdf",
+      "page_number": 3,
+      "score": 0.85
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "Metric",
+        "Q1",
+        "Q2",
+        "Q3",
+        "Q4 (Projected)"
+      ],
+      "name": "Quarterly Comparison",
+      "rows": [
+        [
+          "Revenue ($M)",
+          "8.5",
+          "9.2",
+          "10.5",
+          "11.2"
+        ],
+        [
+          "Expenses ($M)",
+          "7.0",
+          "7.5",
+          "8.2",
+          "8.5"
+        ],
+        [
+          "Profit ($M)",
+          "1.5",
+          "1.7",
+          "2.3",
+          "2.7"
+        ],
+        [
+          "Margin (%)",
+          "18%",
+          "18%",
+          "22%",
+          "24%"
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "Region",
+        "Revenue ($M)",
+        "Growth (%)"
+      ],
+      "name": "Regional Performance",
+      "rows": [
+        [
+          "North America",
+          "5.2",
+          "12%"
+        ],
+        [
+          "Europe",
+          "3.1",
+          "18%"
+        ],
+        [
+          "Asia Pacific",
+          "2.2",
+          "20%"
+        ]
+      ]
+    }
+  ],
+  "title": "Q3 2024 Financial Summary"
+}

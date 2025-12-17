@@ -6,21 +6,28 @@ Converts structured data into various output formats:
 - PowerPoint (.pptx)
 - Markdown (.md)
 - JSON
-- LaTeX
 - PDF
 """
 
-# Will be populated as we implement:
-# from pulldata.synthesis.schema import OutputSchema
-# from pulldata.synthesis.formatters.excel import ExcelFormatter
-# from pulldata.synthesis.formatters.markdown import MarkdownFormatter
-# from pulldata.synthesis.formatters.json import JSONFormatter
-# from pulldata.synthesis.formatters.pptx import PowerPointFormatter
-# from pulldata.synthesis.formatters.latex import LaTeXFormatter
+from pulldata.synthesis.base import FormatConfig, FormatterError, OutputData, OutputFormatter
+from pulldata.synthesis.formatters import (
+    ExcelFormatter,
+    JSONFormatter,
+    MarkdownFormatter,
+    PDFFormatter,
+    PowerPointFormatter,
+)
 
 __all__ = [
-    # "OutputSchema",
-    # "ExcelFormatter",
-    # "MarkdownFormatter",
-    # "JSONFormatter",
+    # Base classes
+    "OutputFormatter",
+    "OutputData",
+    "FormatConfig",
+    "FormatterError",
+    # Formatters
+    "ExcelFormatter",
+    "MarkdownFormatter",
+    "JSONFormatter",
+    "PowerPointFormatter",
+    "PDFFormatter",
 ]

@@ -5,7 +5,8 @@
       "Bash(tree:*)",
       "Bash(dir:*)",
       "Bash(python:*)",
-      "Bash(source venv/Scripts/activate:*)"
+      "Bash(source venv/Scripts/activate:*)",
+      "Bash(done)"
     ]
   }
 }

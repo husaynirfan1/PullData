@@ -1,20 +1,15 @@
-"""
-Output format generators for PullData.
+"""Formatters for various output formats."""
 
-Each formatter converts structured data to a specific output format.
-"""
-
-# Will be populated as we implement:
-# from pulldata.synthesis.formatters.excel import ExcelFormatter
-# from pulldata.synthesis.formatters.markdown import MarkdownFormatter
-# from pulldata.synthesis.formatters.json import JSONFormatter
-# from pulldata.synthesis.formatters.pptx import PowerPointFormatter
-# from pulldata.synthesis.formatters.latex import LaTeXFormatter
+from pulldata.synthesis.formatters.excel import ExcelFormatter
+from pulldata.synthesis.formatters.json_formatter import JSONFormatter
+from pulldata.synthesis.formatters.markdown import MarkdownFormatter
+from pulldata.synthesis.formatters.pdf import PDFFormatter
+from pulldata.synthesis.formatters.powerpoint import PowerPointFormatter
 
 __all__ = [
-    # "ExcelFormatter",
-    # "MarkdownFormatter",
-    # "JSONFormatter",
-    # "PowerPointFormatter",
-    # "LaTeXFormatter",
+    "ExcelFormatter",
+    "MarkdownFormatter",
+    "JSONFormatter",
+    "PowerPointFormatter",
+    "PDFFormatter",
 ]
