@@ -268,41 +268,111 @@ preset: text_gen_webui_preset
 
 ## Embedding Models Configuration
 
-Embeddings are used to convert text into vector representations for similarity search. PullData supports **local embedding models only** (via sentence-transformers), as this is more efficient and doesn't require API calls for every chunk.
+Embeddings are used to convert text into vector representations for similarity search. PullData supports **both local and API-based embeddings**.
 
-###  Configuration
+### Local Embeddings (Default - Recommended)
 
 ```yaml
 # configs/default.yaml
 models:
   embedder:
-    name: BAAI/bge-small-en-v1.5  # Model from HuggingFace
-    dimension: 384                 # Embedding dimension
-    device: cpu                    # or 'cuda' for GPU
-    batch_size: 32                 # Chunks per batch
-    normalize_embeddings: true     # L2 normalization
-    cache_dir: ./models/embeddings # Download location
+    provider: local  # or omit (local is default)
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    device: cpu  # or 'cuda' for GPU
+    batch_size: 32
+    normalize_embeddings: true
 ```
+
+**Advantages:**
+- ✅ Free (no API costs)
+- ✅ Fast batch processing
+- ✅  No network latency
+- ✅ Full privacy
+- ✅ Offline capable
+
+### API Embeddings (New!)
+
+```yaml
+# configs/default.yaml
+models:
+  embedder:
+    provider: api  # Use API for embeddings
+    dimension: 768  # Match your model's dimension
+    
+    api:
+      base_url: http://localhost:1234/v1  # LM Studio
+      api_key: lm-studio
+      model: nomic-embed-text-v1.5
+      batch_size: 100
+      timeout: 60
+      max_retries: 3
+```
+
+**Advantages:**
+- ✅ Easy setup (no local model downloads)
+- ✅ Centralized management (LM Studio UI)
+- ✅ Easy model switching
+- ✅ Works on any machine
+
+**Disadvantages:**
+- ❌ Slower for large batches (network calls)
+- ❌ Requires API server running
+- ❌ Costs money if using cloud APIs
 
 ### Recommended Embedding Models
 
+**Local Models:**
 | Model | Dimension | Size | Quality | Speed |
 |-------|-----------|------|---------|-------|
 | `BAAI/bge-small-en-v1.5` | 384 | ~130MB | Good | Fast |
 | `BAAI/bge-base-en-v1.5` | 768 | ~440MB | Better | Medium |
 | `BAAI/bge-large-en-v1.5` | 1024 | ~1.3GB | Best | Slow |
 | `sentence-transformers/all-MiniLM-L6-v2` | 384 | ~90MB | Good | Very Fast |
-| `intfloat/e5-small-v2` | 384 | ~130MB | Good | Fast |
 
-###Using GPU for Embeddings
+**API Models (via LM Studio):**
+| Model | Dimension | Quality | Notes |
+|-------|-----------|---------|-------|
+| `nomic-embed-text-v1.5` | 768 | Excellent | Recommended |
+| `bge-large-en-v1.5` | 1024 | Best | Slower |
+| `e5-mistral-7b-instruct` | 4096 | Top-tier | Resource intensive |
 
+### LM Studio Embedding Setup
+
+**Option 1: Local Embeddings + LM Studio LLM (Recommended)**
 ```yaml
 models:
   embedder:
+    provider: local  # Fast, free local embeddings
     name: BAAI/bge-small-en-v1.5
-    device: cuda  # Use GPU (10x faster)
-    batch_size: 128  # Increase batch size with GPU
+    device: cpu
+  
+  llm:
+    provider: api  # LM Studio for answer generation
+    api:
+      base_url: http://localhost:1234/v1
+      model: local-model
 ```
+
+**Option 2: LM Studio for Everything**
+```yaml
+models:
+  embedder:
+    provider: api  # LM Studio for embeddings
+    api:
+      base_url: http://localhost:1234/v1
+      model: nomic-embed-text-v1.5
+  
+  llm:
+    provider: api  # LM Studio for LLM
+    api:
+      base_url: http://localhost:1234/v1
+      model: local-model
+```
+
+**Which to choose?**
+- Use Option 1 for best performance (local embeddings are faster)
+- Use Option 2 if you want all inference in LM Studio UI
 
 ### Performance Tips
 

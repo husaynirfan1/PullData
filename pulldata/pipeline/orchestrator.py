@@ -153,15 +153,34 @@ class PullData:
             max_context_tokens=self.config.models.llm.generation.max_tokens,
         )
 
-    def _create_embedder(self) -> Embedder:
-        """Create embedder from configuration."""
-        logger.debug(f"Creating embedder: {self.config.models.embedder.name}")
-        return Embedder(
-            model_name=self.config.models.embedder.name,
-            device=self.config.models.embedder.device,
-            batch_size=self.config.models.embedder.batch_size,
-            normalize_embeddings=self.config.models.embedder.normalize_embeddings,
-        )
+    def _create_embedder(self):
+        """Create embedder from configuration (local or API)."""
+        # Check if API embedder is configured
+        provider = getattr(self.config.models.embedder, 'provider', 'local')
+        
+        if provider == 'api':
+            # Use API embedder
+            logger.debug(f"Creating API embedder: {self.config.models.embedder.api.model}")
+            from pulldata.embedding.api_embedder import APIEmbedder
+            
+            return APIEmbedder(
+                base_url=self.config.models.embedder.api.base_url,
+                api_key=self.config.models.embedder.api.api_key,
+                model=self.config.models.embedder.api.model,
+                timeout=getattr(self.config.models.embedder.api, 'timeout', 60),
+                max_retries=getattr(self.config.models.embedder.api, 'max_retries', 3),
+                batch_size=getattr(self.config.models.embedder.api, 'batch_size', 100),
+                dimension=getattr(self.config.models.embedder, 'dimension', None),
+            )
+        else:
+            # Use local embedder (default)
+            logger.debug(f"Creating local embedder: {self.config.models.embedder.name}")
+            return Embedder(
+                model_name=self.config.models.embedder.name,
+                device=self.config.models.embedder.device,
+                batch_size=self.config.models.embedder.batch_size,
+                normalize_embeddings=self.config.models.embedder.normalize_embeddings,
+            )
 
     def _create_vector_store(self) -> VectorStore:
         """Create vector store from configuration."""
