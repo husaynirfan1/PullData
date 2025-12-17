@@ -266,6 +266,79 @@ preset: text_gen_webui_preset
 
 ---
 
+## Embedding Models Configuration
+
+Embeddings are used to convert text into vector representations for similarity search. PullData supports **local embedding models only** (via sentence-transformers), as this is more efficient and doesn't require API calls for every chunk.
+
+###  Configuration
+
+```yaml
+# configs/default.yaml
+models:
+  embedder:
+    name: BAAI/bge-small-en-v1.5  # Model from HuggingFace
+    dimension: 384                 # Embedding dimension
+    device: cpu                    # or 'cuda' for GPU
+    batch_size: 32                 # Chunks per batch
+    normalize_embeddings: true     # L2 normalization
+    cache_dir: ./models/embeddings # Download location
+```
+
+### Recommended Embedding Models
+
+| Model | Dimension | Size | Quality | Speed |
+|-------|-----------|------|---------|-------|
+| `BAAI/bge-small-en-v1.5` | 384 | ~130MB | Good | Fast |
+| `BAAI/bge-base-en-v1.5` | 768 | ~440MB | Better | Medium |
+| `BAAI/bge-large-en-v1.5` | 1024 | ~1.3GB | Best | Slow |
+| `sentence-transformers/all-MiniLM-L6-v2` | 384 | ~90MB | Good | Very Fast |
+| `intfloat/e5-small-v2` | 384 | ~130MB | Good | Fast |
+
+###Using GPU for Embeddings
+
+```yaml
+models:
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    device: cuda  # Use GPU (10x faster)
+    batch_size: 128  # Increase batch size with GPU
+```
+
+### Performance Tips
+
+1. **Use GPU if available**: 10x faster than CPU
+2. **Match dimensions**: Vector store dimension must match embedding dimension
+3. **Batch size**: Larger = faster,  but uses more memory
+4. **Model size**: Smaller models = faster, less accurate; Larger = slower, more accurate
+
+### LM Studio Note
+
+**LM Studio is ONLY for the LLM (answer generation), NOT for embeddings.**
+
+Embeddings always run locally using sentence-transformers. This is intentional because:
+- Embedding thousands of chunks would be expensive via API
+- Local embedding models are fast and efficient
+- No network latency for vector generation
+
+**Typical Setup with LM Studio:**
+```yaml
+models:
+  # Embeddings:  Local (sentence-transformers)
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    device: cpu  # or cuda
+  
+  # LLM: LM Studio API
+  llm:
+    provider: api
+    api:
+      base_url: http://localhost:1234/v1
+      api_key: sk-dummy
+      model: local-model
+```
+
+---
+
 ## Configuration Examples
 
 ### Example 1: Switch from Local to LM Studio
