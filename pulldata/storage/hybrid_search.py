@@ -103,7 +103,12 @@ class HybridSearchEngine:
                 k=fetch_k,
             )
 
+            # Debug logging
+            from loguru import logger
+            logger.debug(f"HybridSearch: vector search returned {len(chunk_ids)} chunk_ids")
+
             if not chunk_ids:
+                logger.warning("HybridSearch: No chunk_ids returned from vector search!")
                 return []
 
             # Retrieve chunks from metadata store
@@ -115,6 +120,10 @@ class HybridSearchEngine:
                 if chunk is not None:
                     chunks.append(chunk)
                     valid_distances.append(distance)
+                else:
+                    logger.warning(f"HybridSearch: chunk_id '{chunk_id}' not found in metadata store!")
+
+            logger.debug(f"HybridSearch: Retrieved {len(chunks)} chunks from metadata store")
 
             # Apply filters if provided
             if filters:

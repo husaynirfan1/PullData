@@ -6,7 +6,10 @@
       "Bash(dir:*)",
       "Bash(python:*)",
       "Bash(source venv/Scripts/activate:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(ls:*)",
+      "Bash(Remove-Item -Path \"./data/lm_studio_demo\" -Recurse -Force -ErrorAction SilentlyContinue)",
+      "Bash(grep:*)"
     ]
   }
 }

@@ -23,12 +23,12 @@ models:
   # Embedding Model (via LM Studio API)
   embedder:
     provider: api  # Use 'api' for LM Studio embeddings
-    dimension: 768  # Adjust based on your embedding model
+    dimension: 1024  # Adjust based on your embedding model (qwen3 = 1024D)
     
     api:
       base_url: http://localhost:1234/v1  # LM Studio URL
       api_key: lm-studio
-      model: nomic-embed-text-v1.5  # Your loaded embedding model name
+      model: text-embedding-qwen3-embedding-0.6b  # Your loaded embedding model name
       timeout: 60
       max_retries: 3
       batch_size: 100  # Process 100 texts per API call
@@ -40,7 +40,7 @@ models:
     api:
       base_url: http://localhost:1234/v1
       api_key: lm-studio
-      model: local-model  # Or specific LLM model name
+      model: qwen3-1.7b  # Or specific LLM model name
       timeout: 60
       max_retries: 3
 

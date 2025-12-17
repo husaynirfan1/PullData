@@ -383,27 +383,44 @@ models:
 
 ### LM Studio Note
 
-**LM Studio is ONLY for the LLM (answer generation), NOT for embeddings.**
+**LM Studio can now be used for BOTH LLM and embeddings** (as of latest release).
 
-Embeddings always run locally using sentence-transformers. This is intentional because:
-- Embedding thousands of chunks would be expensive via API
-- Local embedding models are fast and efficient
-- No network latency for vector generation
+You can choose between:
+- **Local embeddings** (recommended for performance): Fast, free, no API calls
+- **API embeddings** (via LM Studio): Centralized management, easy model switching
 
-**Typical Setup with LM Studio:**
+**Recommended Setup (Best Performance):**
 ```yaml
 models:
-  # Embeddings:  Local (sentence-transformers)
+  # Embeddings: Local (sentence-transformers) - Fast & Free
   embedder:
+    provider: local
     name: BAAI/bge-small-en-v1.5
     device: cpu  # or cuda
-  
+
   # LLM: LM Studio API
   llm:
     provider: api
     api:
       base_url: http://localhost:1234/v1
       api_key: sk-dummy
+      model: local-model
+```
+
+**Alternative (All-in-LM Studio):**
+```yaml
+models:
+  # Both embeddings and LLM via LM Studio
+  embedder:
+    provider: api
+    api:
+      base_url: http://localhost:1234/v1
+      model: nomic-embed-text-v1.5
+
+  llm:
+    provider: api
+    api:
+      base_url: http://localhost:1234/v1
       model: local-model
 ```
 
@@ -529,6 +546,31 @@ models:
 - Want OpenAI-compatible API locally
 - Transitioning from cloud to local
 
+## Ingestion Statistics
+
+When you ingest documents, PullData returns statistics about the operation:
+
+```python
+stats = pd.ingest(str(sample_file))
+print(f"Processed: {stats.get('processed_files', 0)} files")
+print(f"New chunks: {stats.get('new_chunks', 0)}")
+print(f"Total chunks: {stats.get('total_chunks', 0)}")
+print(f"Skipped chunks: {stats.get('skipped_chunks', 0)}")
+```
+
+**Available Statistics:**
+- `processed_files`: Number of files successfully ingested
+- `failed_files`: Number of files that failed to ingest
+- `total_files`: Total files attempted
+- `new_chunks`: Number of newly created chunks (added to vector store)
+- `total_chunks`: Total chunks parsed from all documents
+- `updated_chunks`: Number of chunks updated (when using differential updates)
+- `skipped_chunks`: Number of unchanged chunks (when differential updates enabled)
+
+**Note:** When differential updates are enabled (default), existing unchanged chunks are skipped to avoid re-embedding the same content.
+
+---
+
 ## Troubleshooting
 
 ### Connection Refused
@@ -572,6 +614,54 @@ Increase timeout in config:
 api:
   timeout: 120  # Increase to 120 seconds
 ```
+
+### Retrieval Returns 0 Sources
+```
+Query: What is machine learning?
+Answer: No answer generated
+Sources: 0
+```
+
+**Possible Causes & Solutions:**
+
+1. **Dimension Mismatch**
+   - Symptom: `ValueError: Embedding dimension X does not match store dimension Y`
+   - Solution: Ensure `embedder.dimension` matches your model's actual output
+   ```yaml
+   embedder:
+     dimension: 768  # Must match your embedding model's dimension
+   ```
+
+2. **Empty Vector Store**
+   - Check: Vector store may not have any chunks
+   - Solution: Re-run ingestion and check for errors
+   ```python
+   # Debug: Check vector store status
+   vec_size = pd._vector_store.index.ntotal
+   print(f"Vector store size: {vec_size}")
+   ```
+
+3. **Chunk ID Mismatch** (Fixed in v0.1.0+)
+   - Symptom: Logs show "chunk_id 'X' not found in metadata store"
+   - Solution: Update to latest version - chunk IDs are now synchronized
+
+4. **Database Schema Outdated**
+   - Symptom: `ValidationError: chunk_hash/token_count field required`
+   - Solution: Delete old database and re-ingest
+   ```bash
+   rm -rf ./data/your_project/
+   ```
+
+### FAISS Warnings (Normal Behavior)
+```
+Invalid index -1 returned by FAISS
+```
+
+**This is normal!** When you request k=5 results but only have 1 chunk in the index, FAISS returns:
+- Index 0 (valid chunk)
+- Index -1, -1, -1, -1 (sentinels for missing results)
+
+The code automatically filters these out. These warnings only appear in debug mode.
 
 ## Python API Usage
 

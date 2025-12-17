@@ -104,9 +104,12 @@ class Chunk(BaseModel):
     # Content
     text: str = Field(..., min_length=1, description="Chunk text content")
     chunk_type: ChunkType = Field(default=ChunkType.TEXT)
+    char_count: int = Field(..., gt=0, description="Character count")
 
     # Position information
     page_number: Optional[int] = Field(None, ge=1, description="Page number (for PDFs)")
+    start_page: Optional[int] = Field(None, ge=1, description="Start page number")
+    end_page: Optional[int] = Field(None, ge=1, description="End page number")
     start_char: Optional[int] = Field(None, ge=0, description="Start char position in document")
     end_char: Optional[int] = Field(None, ge=0, description="End char position in document")
 

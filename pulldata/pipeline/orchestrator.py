@@ -7,6 +7,7 @@ parsing, embedding, storage, retrieval, generation, and formatting.
 from __future__ import annotations
 
 import warnings
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Union
 
@@ -117,7 +118,7 @@ class PullData:
             cache_dir.mkdir(parents=True, exist_ok=True)
             self._embedding_cache = EmbeddingCache(
                 cache_dir=str(cache_dir),
-                max_size=self.config.cache.embedding.max_entries,
+                max_memory_size=self.config.cache.embedding.max_entries,
             )
         
         # Storage components
@@ -185,13 +186,29 @@ class PullData:
     def _create_vector_store(self) -> VectorStore:
         """Create vector store from configuration."""
         logger.debug("Creating vector store...")
-        index_path = Path(f"./data/{self.project}/faiss_index")
-        index_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Map metric from config to FAISS format
+        metric = self.config.retrieval.vector_search.metric
+        if metric.lower() == "cosine":
+            faiss_metric = "IP"  # Inner product for normalized vectors = cosine similarity
+        elif metric.lower() in ["l2", "euclidean"]:
+            faiss_metric = "L2"
+        else:
+            faiss_metric = metric
+        
+        # Normalize index type to proper case
+        index_type = self.config.retrieval.vector_search.index_type
+        if index_type.lower() == "flat":
+            index_type = "Flat"
+        elif index_type.lower() == "ivf":
+            index_type = "IVF"
+        elif index_type.lower() == "hnsw":
+            index_type = "HNSW"
         
         return VectorStore(
             dimension=self.config.models.embedder.dimension,
-            index_path=str(index_path),
-            metric=self.config.retrieval.vector_search.metric,
+            index_type=index_type,
+            metric=faiss_metric,
         )
 
     def _create_metadata_store(self) -> MetadataStore:
@@ -322,6 +339,27 @@ class PullData:
         if file_path.suffix.lower() == ".pdf":
             parser = PDFParser()
             document, page_texts = parser.parse(file_path)
+        elif file_path.suffix.lower() in [".txt", ".md"]:
+            # Simple text file handling
+            import hashlib
+            from pulldata.core.datatypes import Document
+            
+            text_content = file_path.read_text(encoding='utf-8')
+            document_id = f"doc_{file_path.stem}_{int(time.time())}"
+            
+            # Calculate content hash
+            content_hash = hashlib.sha256(text_content.encode()).hexdigest()
+            
+            document = Document(
+                id=document_id,
+                source=str(file_path),
+                source_path=str(file_path),
+                filename=file_path.name,
+                content_hash=content_hash,
+                file_size=len(text_content.encode('utf-8')),
+                metadata={"file_name": file_path.name, "file_type": file_path.suffix}
+            )
+            page_texts = {1: text_content}  # Treat as single page
         else:
             raise ParsingError(
                 f"Unsupported file format: {file_path.suffix}",
@@ -350,6 +388,10 @@ class PullData:
                 document_id=document.id,
                 page_number=page_num,
             )
+            # Set start_page and end_page from page_number
+            for chunk in page_chunks:
+                chunk.start_page = page_num
+                chunk.end_page = page_num
             chunks.extend(page_chunks)
 
         
@@ -376,24 +418,30 @@ class PullData:
         if not chunks_to_process:
             logger.info(f"No new/updated chunks for {document.id}")
             return stats
-        
-        # Step 4: Generate embeddings
+
+        # Step 4: Assign chunk IDs (must be done BEFORE embedding)
+        # This ensures VectorStore and MetadataStore use the same IDs
+        for chunk in chunks_to_process:
+            if chunk.id is None:
+                chunk.id = f"chunk-{document.id}-{chunk.chunk_index}"
+
+        # Step 5: Generate embeddings
         logger.debug(f"Generating embeddings for {len(chunks_to_process)} chunks")
         embeddings = self._embedder.embed_chunks(
             chunks_to_process,
             show_progress_bar=False,
         )
-        
-        # Step 5: Store in vector store and metadata store
+
+        # Step 6: Store in vector store and metadata store
         logger.debug(f"Storing {len(chunks_to_process)} chunks")
-        
+
         # Store metadata
         self._metadata_store.add_document(document)
         for chunk in chunks_to_process:
             self._metadata_store.add_chunk(chunk)
         
         # Store vectors
-        self._vector_store.add_embeddings(embeddings)
+        self._vector_store.add(embeddings)
         
         stats["new_chunks"] = len(chunks_to_process)
         
@@ -440,20 +488,26 @@ class PullData:
             )
         
         # Convert to QueryResult
+        from pulldata.core.datatypes import RetrievedChunk, LLMResponse
+
         result = QueryResult(
             query=query,
-            answer=rag_response.answer,
-            sources=[
-                {
-                    "document_id": r.chunk.document_id,
-                    "chunk_id": r.chunk.id,
-                    "page_number": r.chunk.metadata.get("page_number"),
-                    "score": r.score,
-                    "text": r.chunk.text,
-                }
+            retrieved_chunks=[
+                RetrievedChunk(
+                    chunk=r.chunk,
+                    score=r.score,
+                    rank=r.rank,
+                )
                 for r in rag_response.retrieved_chunks
             ],
-            metadata=rag_response.metadata,
+            llm_response=LLMResponse(
+                text=rag_response.answer or "",
+                model=rag_response.metadata.get("llm_response", {}).get("model", "unknown"),
+                provider="api" if self.config.models.llm.provider == "api" else "local",
+                prompt_tokens=rag_response.metadata.get("llm_response", {}).get("prompt_tokens"),
+                completion_tokens=rag_response.metadata.get("llm_response", {}).get("completion_tokens"),
+                total_tokens=rag_response.metadata.get("llm_response", {}).get("tokens_used"),
+            ) if rag_response.answer else None,
         )
         
         # If output format specified, convert to OutputData
@@ -465,18 +519,31 @@ class PullData:
 
     def _convert_to_output_data(self, result: QueryResult) -> OutputData:
         """Convert QueryResult to OutputData for formatting.
-        
+
         Args:
             result: QueryResult object
-            
+
         Returns:
             OutputData object ready for formatting
         """
+        answer_text = result.llm_response.text if result.llm_response else "No answer generated"
+
+        sources = [
+            {
+                "document_id": r.chunk.document_id,
+                "chunk_id": r.chunk.id,
+                "page_number": r.chunk.metadata.get("page_number"),
+                "score": r.score,
+                "text": r.chunk.text,
+            }
+            for r in result.retrieved_chunks
+        ]
+
         return OutputData(
             title=f"Query: {result.query}",
-            content=result.answer or "No answer generated",
-            sources=result.sources,
-            metadata=result.metadata,
+            content=answer_text,
+            sources=sources,
+            metadata={},
         )
 
     def format_and_save(
@@ -517,10 +584,12 @@ class PullData:
             "search_engine": self._search_engine.get_stats(),
         }
 
+
     def close(self) -> None:
         """Clean up resources."""
         logger.info("Closing PullData")
         if self._vector_store:
-            self._vector_store.save()
+            index_path = Path(f"./data/{self.project}/faiss_index")
+            self._vector_store.save(index_path)
         if self._metadata_store:
             self._metadata_store.close()

@@ -12,7 +12,7 @@ storage:
     port: 5432
     database: pulldata
     user: pulldata_user
-    password: ${POSTGRES_PASSWORD}  # Set via environment variable
+    password: pulldata_password  # Change this or set POSTGRES_PASSWORD env var
     vector_dimension: 384
     pool_size: 5
     max_overflow: 10
@@ -43,7 +43,7 @@ models:
   # Language Model
   llm:
     # Provider: 'local' for transformers models, 'api' for OpenAI-compatible endpoints
-    provider: local  # Options: 'local', 'api'
+    provider: api  # Options: 'local', 'api'
 
     # Local Model Configuration (when provider='local')
     local:
@@ -57,8 +57,8 @@ models:
     # Compatible with OpenAI API, LM Studio, vLLM, Text Generation WebUI, etc.
     api:
       base_url: http://localhost:1234/v1  # LM Studio default
-      api_key: ${OPENAI_API_KEY}  # Set via environment variable (use 'sk-dummy' for local servers)
-      model: local-model  # Model name/identifier
+      api_key: sk-dummy  # Use 'sk-dummy' for local servers, or set ${OPENAI_API_KEY} for cloud
+      model: qwen3-1.7b  # Model name/identifier
       timeout: 60  # Request timeout in seconds
       max_retries: 3
 

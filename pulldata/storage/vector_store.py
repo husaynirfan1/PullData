@@ -110,6 +110,10 @@ class VectorStore:
         # Track chunk IDs
         self.chunk_ids.extend([emb.chunk_id for emb in embeddings])
 
+        # Debug logging
+        from loguru import logger
+        logger.debug(f"VectorStore.add completed: added {len(embeddings)} embeddings, index.ntotal now={self.index.ntotal}, chunk_ids count={len(self.chunk_ids)}")
+
     def add_single(self, embedding: Embedding) -> None:
         """
         Add a single embedding to the index.
@@ -139,6 +143,10 @@ class VectorStore:
         Raises:
             VectorStoreError: If index is empty or query has wrong dimension
         """
+        # Debug logging
+        from loguru import logger
+        logger.debug(f"VectorStore.search called: index.ntotal={self.index.ntotal}, size property={self.size}, chunk_ids count={len(self.chunk_ids)}")
+
         if self.size == 0:
             raise VectorStoreError("Cannot search empty index")
 
@@ -167,6 +175,10 @@ class VectorStore:
         distances = distances[0].tolist()
         indices = indices[0].tolist()
 
+        # Debug logging
+        logger.debug(f"FAISS search returned {len(indices)} indices: {indices}")
+        logger.debug(f"FAISS distances: {distances}")
+
         # Get chunk IDs for valid indices
         chunk_ids = []
         valid_distances = []
@@ -174,7 +186,10 @@ class VectorStore:
             if 0 <= idx < len(self.chunk_ids):
                 chunk_ids.append(self.chunk_ids[idx])
                 valid_distances.append(dist)
+            else:
+                logger.debug(f"Invalid index {idx} returned by FAISS (chunk_ids length={len(self.chunk_ids)})")
 
+        logger.debug(f"Mapped to {len(chunk_ids)} chunk_ids: {chunk_ids}")
         return chunk_ids, valid_distances
 
     def remove(self, chunk_ids: list[str]) -> int:

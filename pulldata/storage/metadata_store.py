@@ -94,10 +94,12 @@ class MetadataStore:
                     document_id TEXT NOT NULL,
                     text TEXT NOT NULL,
                     chunk_index INTEGER NOT NULL,
+                    chunk_hash TEXT NOT NULL,
                     chunk_type TEXT NOT NULL,
                     start_page INTEGER,
                     end_page INTEGER,
                     char_count INTEGER NOT NULL,
+                    token_count INTEGER NOT NULL,
                     metadata TEXT,
                     FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
                 )
@@ -133,10 +135,12 @@ class MetadataStore:
                     document_id TEXT NOT NULL,
                     text TEXT NOT NULL,
                     chunk_index INTEGER NOT NULL,
+                    chunk_hash TEXT NOT NULL,
                     chunk_type TEXT NOT NULL,
                     start_page INTEGER,
                     end_page INTEGER,
                     char_count INTEGER NOT NULL,
+                    token_count INTEGER NOT NULL,
                     metadata JSONB,
                     FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
                 )
@@ -216,23 +220,25 @@ class MetadataStore:
 
         cursor.execute("""
             INSERT INTO chunks (
-                id, document_id, text, chunk_index, chunk_type,
-                start_page, end_page, char_count, metadata
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                id, document_id, text, chunk_index, chunk_hash, chunk_type,
+                start_page, end_page, char_count, token_count, metadata
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """ if self.db_type == "sqlite" else """
             INSERT INTO chunks (
-                id, document_id, text, chunk_index, chunk_type,
-                start_page, end_page, char_count, metadata
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                id, document_id, text, chunk_index, chunk_hash, chunk_type,
+                start_page, end_page, char_count, token_count, metadata
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             chunk.id,
             chunk.document_id,
             chunk.text,
             chunk.chunk_index,
+            chunk.chunk_hash,
             chunk.chunk_type.value,
             chunk.start_page,
             chunk.end_page,
             chunk.char_count,
+            chunk.token_count,
             metadata_str,
         ))
 
@@ -307,7 +313,32 @@ class MetadataStore:
         rows = cursor.fetchall()
         cursor.close()
 
+
         return [self._row_to_chunk(row) for row in rows]
+
+    def get_chunk_hashes(self, document_id: str) -> set[str]:
+        """
+        Get chunk hashes for a document (for differential updates).
+
+        Args:
+            document_id: Document ID
+
+        Returns:
+            Set of chunk hashes
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                "SELECT chunk_hash FROM chunks WHERE document_id = ?" if self.db_type == "sqlite" else
+                "SELECT chunk_hash FROM chunks WHERE document_id = %s",
+                (document_id,)
+            )
+            rows = cursor.fetchall()
+            cursor.close()
+            return {row[0] for row in rows if row[0]}
+        except Exception as e:
+            # If chunk_hash column doesn't exist, return empty set
+            return set()
 
     def search_chunks(
         self,
@@ -426,17 +457,19 @@ class MetadataStore:
         if self.db_type == "sqlite":
             metadata = json.loads(row["metadata"]) if row["metadata"] else {}
         else:
-            metadata = row[8] if isinstance(row[8], dict) else json.loads(row[8] or "{}")
+            metadata = row[10] if isinstance(row[10], dict) else json.loads(row[10] or "{}")
 
         return Chunk(
             id=row[0],
             document_id=row[1],
             text=row[2],
             chunk_index=row[3],
-            chunk_type=row[4],
-            start_page=row[5],
-            end_page=row[6],
-            char_count=row[7],
+            chunk_hash=row[4],
+            chunk_type=row[5],
+            start_page=row[6],
+            end_page=row[7],
+            char_count=row[8],
+            token_count=row[9],
             metadata=metadata,
         )
 

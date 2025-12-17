@@ -254,6 +254,7 @@ class TextChunker:
             chunk_hash=chunk_hash,
             text=text,
             chunk_type=ChunkType.TEXT,
+            char_count=len(text),
             page_number=page_number,
             start_char=actual_start,
             end_char=actual_end,

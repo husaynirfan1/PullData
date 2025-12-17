@@ -70,15 +70,33 @@ class StorageConfig(BaseModel):
 # ============================================================
 
 
-class EmbedderConfig(BaseModel):
-    """Embedding model configuration."""
 
+class APIEmbedderConfig(BaseModel):
+    """API-based embedder configuration (OpenAI-compatible)."""
+    
+    base_url: str = "http://localhost:1234/v1"
+    api_key: str = "lm-studio"
+    model: str = "text-embedding-3-small"
+    timeout: int = Field(default=60, gt=0)
+    max_retries: int = Field(default=3, ge=0)
+    batch_size: int = Field(default=100, gt=0)
+
+
+class EmbedderConfig(BaseModel):
+    """Embedding model configuration supporting both local and API providers."""
+    
+    provider: Literal["local", "api"] = "local"  # NEW: provider selection
+    
+    # Local embedder config
     name: str = "BAAI/bge-small-en-v1.5"
     dimension: int = Field(default=384, gt=0)
     batch_size: int = Field(default=32, gt=0)
-    device: Literal["cuda", "cpu"] = "cuda"
+    device: Literal["cuda", "cpu"] = "cpu"  # Changed default to cpu
     normalize_embeddings: bool = True
     cache_dir: str = "./models/embeddings"
+    
+    # API embedder config
+    api: APIEmbedderConfig = Field(default_factory=APIEmbedderConfig)
 
 
 class LocalLLMConfig(BaseModel):
