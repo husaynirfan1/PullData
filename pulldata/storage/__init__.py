@@ -1,29 +1,17 @@
 """
-Storage backends for PullData.
+Storage layer for PullData.
 
-Provides pluggable storage implementations:
-- PostgreSQL + pgvector (production)
-- SQLite + FAISS (local development)
-- ChromaDB (standalone)
-
-All backends support:
-- Multi-project isolation
-- Differential updates
-- LLM output caching
-- Advanced metadata filtering
+Provides vector storage (FAISS), metadata storage (SQLite/PostgreSQL),
+and hybrid search capabilities.
 """
 
-# Will be populated as we implement:
-# from pulldata.storage.base import StorageBackend
-# from pulldata.storage.postgres_backend import PostgresBackend
-# from pulldata.storage.sqlite_backend import SQLiteBackend
-# from pulldata.storage.chroma_backend import ChromaBackend
-# from pulldata.storage.project_manager import ProjectManager
+from pulldata.storage.hybrid_search import HybridSearchEngine, SearchResult
+from pulldata.storage.metadata_store import MetadataStore
+from pulldata.storage.vector_store import VectorStore
 
 __all__ = [
-    # "StorageBackend",
-    # "PostgresBackend",
-    # "SQLiteBackend",
-    # "ChromaBackend",
-    # "ProjectManager",
+    "VectorStore",
+    "MetadataStore",
+    "HybridSearchEngine",
+    "SearchResult",
 ]

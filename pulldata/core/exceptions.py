@@ -283,3 +283,16 @@ class CacheWriteError(CacheError):
     """Raised when writing to cache fails."""
 
     pass
+
+
+# Vector Store Errors
+class VectorStoreError(PullDataError):
+    """Base exception for vector store operations."""
+
+    pass
+
+
+class MetadataStoreError(PullDataError):
+    """Base exception for metadata store operations."""
+
+    pass
