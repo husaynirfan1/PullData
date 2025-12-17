@@ -5,6 +5,8 @@ Handles loading, validation, and management of configuration from YAML files
 with environment variable substitution and preset support.
 """
 
+from __future__ import annotations
+
 import os
 import re
 from pathlib import Path
@@ -32,7 +34,7 @@ class PostgresConfig(BaseModel):
     port: int = Field(default=5432, gt=0, le=65535)
     database: str = "pulldata"
     user: str = "pulldata_user"
-    password: str = Field(..., description="Database password")
+    password: str = Field(default="", description="Database password")
     vector_dimension: int = Field(default=384, gt=0)
     pool_size: int = Field(default=5, gt=0)
     max_overflow: int = Field(default=10, ge=0)

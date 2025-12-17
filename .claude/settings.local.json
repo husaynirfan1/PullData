@@ -3,7 +3,9 @@
     "allow": [
       "Bash(python verify_setup.py:*)",
       "Bash(tree:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(python:*)",
+      "Bash(source venv/Scripts/activate:*)"
     ]
   }
 }

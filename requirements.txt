@@ -17,6 +17,7 @@ torch>=2.1.0
 bitsandbytes>=0.41.0
 accelerate>=0.24.0
 openai>=1.0.0
+requests>=2.31.0
 
 # Storage Backends
 psycopg2-binary>=2.9.9

@@ -100,6 +100,7 @@ class TestEmbedder:
         """Test embedding Chunk objects."""
         chunks = [
             Chunk(
+                id="chunk-1",
                 document_id="doc-1",
                 chunk_index=0,
                 chunk_hash="hash1",
@@ -107,6 +108,7 @@ class TestEmbedder:
                 token_count=3,
             ),
             Chunk(
+                id="chunk-2",
                 document_id="doc-1",
                 chunk_index=1,
                 chunk_hash="hash2",

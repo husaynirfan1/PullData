@@ -174,7 +174,13 @@ class RerankerError(RetrievalError):
 
 
 # LLM Generation Errors
-class GenerationError(PullDataError):
+class LLMError(PullDataError):
+    """Base exception for all LLM-related errors."""
+
+    pass
+
+
+class GenerationError(LLMError):
     """Base exception for LLM generation errors."""
 
     pass
