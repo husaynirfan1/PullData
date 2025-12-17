@@ -1,0 +1,312 @@
+# Model Configuration Presets
+# This file contains different model configurations for various hardware setups
+
+# Preset: P4 (8GB VRAM) - Default for PullData
+p4_preset:
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    batch_size: 32
+    device: cuda
+
+  llm:
+    name: Qwen/Qwen2.5-3B-Instruct
+    quantization: int8
+    device: cuda
+    max_tokens: 2048
+
+# Preset: CPU-Only (No GPU)
+cpu_preset:
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    batch_size: 16  # Smaller batch for CPU
+    device: cpu
+
+  llm:
+    name: Qwen/Qwen2.5-3B-Instruct
+    quantization: int8
+    device: cpu
+    max_tokens: 1024  # Reduce for CPU
+
+# Preset: High-End GPU (24GB+ VRAM)
+high_end_preset:
+  embedder:
+    name: BAAI/bge-large-en-v1.5
+    dimension: 1024
+    batch_size: 64
+    device: cuda
+
+  llm:
+    name: Qwen/Qwen2.5-7B-Instruct
+    quantization: fp16
+    device: cuda
+    max_tokens: 4096
+
+# Preset: Budget (Minimal)
+minimal_preset:
+  embedder:
+    name: sentence-transformers/all-MiniLM-L6-v2
+    dimension: 384
+    batch_size: 16
+    device: cpu
+
+  llm:
+    name: Qwen/Qwen2.5-1.5B-Instruct
+    quantization: int8
+    device: cpu
+    max_tokens: 1024
+
+# Alternative Embedding Models
+embedding_models:
+  bge_small:
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    description: "Fast, efficient, good quality (Default)"
+
+  bge_base:
+    name: BAAI/bge-base-en-v1.5
+    dimension: 768
+    description: "Balanced performance and quality"
+
+  bge_large:
+    name: BAAI/bge-large-en-v1.5
+    dimension: 1024
+    description: "Best quality, slower"
+
+  minilm:
+    name: sentence-transformers/all-MiniLM-L6-v2
+    dimension: 384
+    description: "Lightweight, fast, lower quality"
+
+  e5_small:
+    name: intfloat/e5-small-v2
+    dimension: 384
+    description: "Alternative to BGE-small"
+
+# Alternative LLM Models
+llm_models:
+  qwen_1_5b:
+    name: Qwen/Qwen2.5-1.5B-Instruct
+    description: "Smallest, fastest, lowest quality"
+    recommended_vram: "2-4GB"
+
+  qwen_3b:
+    name: Qwen/Qwen2.5-3B-Instruct
+    description: "Balanced (Default for P4)"
+    recommended_vram: "4-8GB"
+
+  qwen_7b:
+    name: Qwen/Qwen2.5-7B-Instruct
+    description: "Better quality, requires more VRAM"
+    recommended_vram: "12-16GB"
+
+  phi_2:
+    name: microsoft/phi-2
+    description: "Microsoft's efficient 2.7B model"
+    recommended_vram: "4-6GB"
+
+  llama_3b:
+    name: meta-llama/Llama-3.2-3B-Instruct
+    description: "Meta's 3B instruction-tuned model"
+    recommended_vram: "4-8GB"
+
+# Reranking Models (Optional)
+reranker_models:
+  bge_reranker_base:
+    name: BAAI/bge-reranker-base
+    description: "Good quality reranking"
+
+  bge_reranker_large:
+    name: BAAI/bge-reranker-large
+    description: "Best quality, slower"
+
+# Quantization Guide
+quantization_guide:
+  none:
+    description: "No quantization (FP32)"
+    vram_multiplier: 4.0
+    quality: "Best"
+
+  fp16:
+    description: "Half precision"
+    vram_multiplier: 2.0
+    quality: "Excellent"
+
+  int8:
+    description: "8-bit quantization (Default for P4)"
+    vram_multiplier: 1.0
+    quality: "Good"
+
+  int4:
+    description: "4-bit quantization"
+    vram_multiplier: 0.5
+    quality: "Acceptable"
+
+# API-Based Presets (OpenAI-Compatible Endpoints)
+# Use these when you want to use external API services or local API servers
+
+# Preset: LM Studio (Local API Server)
+lm_studio_preset:
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    device: cpu  # Embeddings still run locally
+
+  llm:
+    provider: api
+    api:
+      base_url: http://localhost:1234/v1
+      api_key: sk-dummy  # LM Studio doesn't require real API key
+      model: local-model
+      timeout: 120
+
+# Preset: OpenAI API (GPT-3.5/GPT-4)
+openai_preset:
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    device: cpu
+
+  llm:
+    provider: api
+    api:
+      base_url: https://api.openai.com/v1
+      api_key: ${OPENAI_API_KEY}
+      model: gpt-3.5-turbo  # or gpt-4, gpt-4-turbo
+      timeout: 60
+
+# Preset: vLLM Server (Self-hosted)
+vllm_preset:
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    device: cpu
+
+  llm:
+    provider: api
+    api:
+      base_url: http://localhost:8000/v1
+      api_key: sk-dummy
+      model: meta-llama/Llama-3.2-3B-Instruct
+      timeout: 120
+
+# Preset: Text Generation WebUI (Oobabooga)
+text_gen_webui_preset:
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    device: cpu
+
+  llm:
+    provider: api
+    api:
+      base_url: http://localhost:5000/v1
+      api_key: sk-dummy
+      model: default
+      timeout: 120
+
+# Preset: Ollama (via OpenAI-compatible endpoint)
+ollama_preset:
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    device: cpu
+
+  llm:
+    provider: api
+    api:
+      base_url: http://localhost:11434/v1
+      api_key: sk-dummy
+      model: llama3.2:3b
+      timeout: 120
+
+# API Provider Configurations
+api_providers:
+  lm_studio:
+    name: "LM Studio"
+    default_base_url: "http://localhost:1234/v1"
+    requires_api_key: false
+    description: "Local LLM server with OpenAI-compatible API"
+    setup_url: "https://lmstudio.ai"
+
+  openai:
+    name: "OpenAI"
+    default_base_url: "https://api.openai.com/v1"
+    requires_api_key: true
+    description: "Official OpenAI API (GPT-3.5, GPT-4)"
+    setup_url: "https://platform.openai.com/api-keys"
+    popular_models:
+      - gpt-3.5-turbo
+      - gpt-4
+      - gpt-4-turbo
+      - gpt-4o
+
+  anthropic:
+    name: "Anthropic (via OpenAI SDK)"
+    default_base_url: "https://api.anthropic.com/v1"
+    requires_api_key: true
+    description: "Claude models via OpenAI-compatible endpoint"
+    setup_url: "https://console.anthropic.com"
+    note: "May require adapter middleware"
+
+  vllm:
+    name: "vLLM"
+    default_base_url: "http://localhost:8000/v1"
+    requires_api_key: false
+    description: "High-throughput LLM serving engine"
+    setup_url: "https://github.com/vllm-project/vllm"
+
+  text_gen_webui:
+    name: "Text Generation WebUI"
+    default_base_url: "http://localhost:5000/v1"
+    requires_api_key: false
+    description: "Oobabooga's text generation web UI"
+    setup_url: "https://github.com/oobabooga/text-generation-webui"
+
+  ollama:
+    name: "Ollama"
+    default_base_url: "http://localhost:11434/v1"
+    requires_api_key: false
+    description: "Run LLMs locally with easy setup"
+    setup_url: "https://ollama.ai"
+
+  together_ai:
+    name: "Together AI"
+    default_base_url: "https://api.together.xyz/v1"
+    requires_api_key: true
+    description: "Fast inference API for open-source models"
+    setup_url: "https://together.ai"
+
+  groq:
+    name: "Groq"
+    default_base_url: "https://api.groq.com/openai/v1"
+    requires_api_key: true
+    description: "Ultra-fast LLM inference"
+    setup_url: "https://console.groq.com"
+
+# Hardware Recommendations
+hardware_recommendations:
+  tesla_p4:
+    preset: p4_preset
+    notes: "Default target hardware - local models"
+
+  cpu_only:
+    preset: cpu_preset
+    notes: "Use for machines without GPU - local models"
+
+  rtx_3090:
+    preset: high_end_preset
+    notes: "Can handle larger local models"
+
+  m1_mac:
+    preset: cpu_preset
+    notes: "Use CPU mode, Metal support coming soon"
+
+  no_local_gpu:
+    preset: lm_studio_preset
+    notes: "Use LM Studio or other API providers when no GPU available"
+
+  cloud_api:
+    preset: openai_preset
+    notes: "Use cloud APIs (OpenAI, Groq, Together) for no local compute"

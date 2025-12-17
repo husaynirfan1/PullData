@@ -1,0 +1,225 @@
+# PullData Default Configuration
+# This file contains all default settings for the PullData system
+
+# Storage Backend Configuration
+storage:
+  # Backend type: 'postgres', 'local', or 'chromadb'
+  backend: local
+
+  # PostgreSQL Configuration (used when backend='postgres')
+  postgres:
+    host: localhost
+    port: 5432
+    database: pulldata
+    user: pulldata_user
+    password: ${POSTGRES_PASSWORD}  # Set via environment variable
+    vector_dimension: 384
+    pool_size: 5
+    max_overflow: 10
+    echo: false  # Set to true for SQL query logging
+
+  # Local SQLite Configuration (used when backend='local')
+  local:
+    sqlite_path: ./data/pulldata.db
+    faiss_index_path: ./data/faiss_indexes
+    create_if_missing: true
+
+  # ChromaDB Configuration (used when backend='chromadb')
+  chromadb:
+    persist_directory: ./data/chroma_db
+    create_if_missing: true
+
+# Model Configuration
+models:
+  # Embedding Model
+  embedder:
+    name: BAAI/bge-small-en-v1.5
+    dimension: 384
+    batch_size: 32
+    device: cuda  # or 'cpu'
+    normalize_embeddings: true
+    cache_dir: ./models/embeddings
+
+  # Language Model
+  llm:
+    # Provider: 'local' for transformers models, 'api' for OpenAI-compatible endpoints
+    provider: local  # Options: 'local', 'api'
+
+    # Local Model Configuration (when provider='local')
+    local:
+      name: Qwen/Qwen2.5-3B-Instruct
+      quantization: int8  # Options: 'none', 'int8', 'int4', 'fp16'
+      device: cuda  # or 'cpu'
+      cache_dir: ./models/llm
+      trust_remote_code: true
+
+    # API Configuration (when provider='api')
+    # Compatible with OpenAI API, LM Studio, vLLM, Text Generation WebUI, etc.
+    api:
+      base_url: http://localhost:1234/v1  # LM Studio default
+      api_key: ${OPENAI_API_KEY}  # Set via environment variable (use 'sk-dummy' for local servers)
+      model: local-model  # Model name/identifier
+      timeout: 60  # Request timeout in seconds
+      max_retries: 3
+
+    # Generation Parameters (applies to both local and API)
+    generation:
+      max_tokens: 2048
+      temperature: 0.7
+      top_p: 0.9
+      top_k: 50  # Not supported by all API providers
+      frequency_penalty: 0.0
+      presence_penalty: 0.0
+
+# Document Processing Configuration
+parsing:
+  # PDF Parsing
+  pdf:
+    backend: pymupdf  # Options: 'pymupdf', 'pdfplumber'
+    extract_images: false  # Not used in text-only mode
+    extract_tables: true
+    table_settings:
+      min_words_vertical: 3
+      min_words_horizontal: 3
+      intersection_tolerance: 3
+
+  # Chunking Strategy
+  chunking:
+    strategy: semantic  # Options: 'semantic', 'fixed', 'sentence'
+    chunk_size: 512  # In tokens
+    chunk_overlap: 50
+    min_chunk_size: 100
+    respect_sentence_boundary: true
+
+  # Content Hashing (for differential updates)
+  hashing:
+    algorithm: sha256
+    enabled: true
+
+# Retrieval Configuration
+retrieval:
+  # Vector Search
+  vector_search:
+    index_type: flat  # Options: 'flat', 'ivf', 'hnsw'
+    metric: cosine  # Options: 'cosine', 'l2', 'ip'
+    top_k: 5
+    nprobe: 10  # For IVF index
+
+  # Metadata Filtering
+  filters:
+    enabled: true
+    default_filters: {}
+
+  # Reranking (optional)
+  reranking:
+    enabled: false
+    model: BAAI/bge-reranker-base
+    top_n: 3
+
+# LLM Cache Configuration
+cache:
+  llm_output:
+    enabled: true
+    ttl_hours: 24
+    max_entries: 10000
+    eviction_policy: lru  # Options: 'lru', 'lfu', 'ttl'
+
+  embedding:
+    enabled: true
+    ttl_hours: 168  # 7 days
+    max_entries: 50000
+
+# Project Configuration
+project:
+  name: default_project
+  description: "Default PullData project"
+  metadata:
+    created_at: null  # Auto-populated
+    tags: []
+
+  # Isolation Strategy
+  isolation:
+    postgres: schema  # Use separate schemas
+    local: database  # Use separate SQLite files
+    chromadb: collection  # Use separate collections
+
+# Output Generation Configuration
+output:
+  # Excel Settings
+  excel:
+    engine: openpyxl  # Options: 'openpyxl', 'xlsxwriter'
+    default_sheet_name: Sheet1
+    include_metadata: true
+    styling:
+      header_bold: true
+      auto_filter: true
+      freeze_panes: A2
+
+  # Markdown Settings
+  markdown:
+    include_toc: true
+    code_theme: github
+    heading_level: 2
+
+  # JSON Settings
+  json:
+    indent: 2
+    ensure_ascii: false
+    sort_keys: false
+
+  # PowerPoint Settings
+  pptx:
+    template: null  # Path to template file
+    default_layout: Title and Content
+
+  # LaTeX Settings
+  latex:
+    document_class: article
+    packages: [amsmath, graphicx, hyperref]
+
+# Logging Configuration
+logging:
+  level: INFO  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+  log_to_file: true
+  log_file: ./logs/pulldata.log
+  rotation: 10 MB
+  retention: 30 days
+  compression: zip
+
+# Performance Configuration
+performance:
+  # Batch Processing
+  batch_size: 32
+  num_workers: 4
+
+  # Memory Management
+  max_memory_gb: 6  # For P4 with 8GB VRAM
+  clear_cache_after_ingest: false
+
+  # Progress Bars
+  show_progress: true
+
+# API Configuration (for future FastAPI server)
+api:
+  enabled: false
+  host: 0.0.0.0
+  port: 8000
+  workers: 1
+  reload: false
+
+# Feature Flags
+features:
+  differential_updates: true
+  multi_project: true
+  advanced_filtering: true
+  llm_caching: true
+  streaming_generation: false  # Post-MVP
+  table_embeddings: false  # Post-MVP
+
+# Security Configuration
+security:
+  validate_file_types: true
+  allowed_extensions: [.pdf, .docx, .txt]
+  max_file_size_mb: 100
+  sanitize_inputs: true

@@ -1,0 +1,48 @@
+# PullData Requirements
+# Install with: pip install -r requirements.txt
+# Or use: pip install -e . (recommended, uses pyproject.toml)
+
+# Document Parsing
+PyMuPDF>=1.23.0
+pdfplumber>=0.10.0
+python-docx>=1.1.0
+
+# Embeddings & Vector Search
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.4
+
+# LLM & ML
+transformers>=4.35.0
+torch>=2.1.0
+bitsandbytes>=0.41.0
+accelerate>=0.24.0
+openai>=1.0.0
+
+# Storage Backends
+psycopg2-binary>=2.9.9
+chromadb>=0.4.0
+
+# Output Generation
+openpyxl>=3.1.0
+XlsxWriter>=3.1.0
+python-pptx>=0.6.23
+markdown2>=2.4.0
+reportlab>=4.0.0
+
+# Data Handling
+pydantic>=2.5.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Configuration & Environment
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Logging & CLI
+loguru>=0.7.0
+typer[all]>=0.9.0
+rich>=13.0.0
+
+# Utilities
+tenacity>=8.2.0
+tqdm>=4.66.0

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python verify_setup.py:*)",
+      "Bash(tree:*)",
+      "Bash(dir:*)"
+    ]
+  }
+}
