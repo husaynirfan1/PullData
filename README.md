@@ -6,6 +6,7 @@ PullData is a high-performance, text-based RAG (Retrieval-Augmented Generation) 
 
 ## Key Features
 
+- **Web UI & REST API**: Interactive web interface with FastAPI backend for easy document management
 - **Versatile Output Formats**: Excel (.xlsx), PowerPoint (.pptx), Markdown, JSON, LaTeX, PDF
 - **Advanced Table Extraction**: Preserves table structure and enables direct Excel export
 - **Flexible LLM Options**: Local models OR OpenAI-compatible APIs (LM Studio, Ollama, OpenAI, Groq, etc.)
@@ -28,12 +29,30 @@ cd pulldata
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# Install dependencies (includes Web UI components)
 pip install -e .
 
+# Verify installation (optional but recommended)
+python verify_install.py
+
 # Copy environment file
-cp .env.example .env
+cp .env.example .env  # On Windows: copy .env.example .env
 ```
+
+### Web UI (Easiest Way)
+
+```bash
+# Start the server
+python run_server.py
+
+# Open browser to http://localhost:8000/ui/
+# - Upload documents
+# - Query with natural language
+# - Generate Excel, PDF, PowerPoint, and more
+# - Download results instantly
+```
+
+See [Web UI Guide](docs/WEB_UI_GUIDE.md) for full documentation.
 
 ### Basic Usage (Python API)
 
@@ -352,27 +371,31 @@ mypy pulldata/
 
 ## Roadmap
 
-### MVP (Current)
+### Completed ✅
 - [x] Project structure setup
-- [ ] Core data structures
-- [ ] Document parsing (PDF + tables)
-- [ ] Embedding generation
-- [ ] Storage backends (PostgreSQL, SQLite)
-- [ ] Vector search with FAISS
-- [ ] LLM generation
-- [ ] Excel & Markdown output
-- [ ] CLI interface
+- [x] Core data structures
+- [x] Document parsing (PDF + tables)
+- [x] Embedding generation (local + API)
+- [x] Storage backends (PostgreSQL, SQLite)
+- [x] Vector search with FAISS
+- [x] LLM generation (local + API)
+- [x] Excel, Markdown, JSON, PowerPoint, PDF output
+- [x] CLI interface
+- [x] FastAPI REST API
+- [x] Web UI with file upload
 
-### Post-MVP
-- [ ] ChromaDB backend
-- [ ] PowerPoint output
-- [ ] LaTeX output
+### In Progress 🚧
+- [ ] ChromaDB backend integration
+- [ ] LaTeX output formatter
 - [ ] Streaming generation
+- [ ] Authentication & authorization
+
+### Planned 📋
 - [ ] Reranking support
-- [ ] FastAPI server
-- [ ] Web UI
 - [ ] Table embeddings
-- [ ] Multi-modal support
+- [ ] Multi-modal support (images, charts)
+- [ ] Advanced entity extraction
+- [ ] Batch processing API
 
 ## Contributing
 
@@ -401,6 +424,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**Status**: Alpha - Active Development
+**Status**: Alpha - Active Development (~95% Feature Complete)
 
-**Last Updated**: 2025-12-17
+**Last Updated**: 2024-12-18

@@ -78,6 +78,11 @@ dependencies = [
     # Utilities
     "tenacity>=8.2.0",  # Retry logic
     "tqdm>=4.66.0",  # Progress bars
+
+    # Web UI & API Server
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",  # File upload support
 ]
 
 [project.optional-dependencies]
@@ -93,6 +98,13 @@ dev = [
 
 gpu = [
     "faiss-gpu>=1.7.4",
+]
+
+server = [
+    # Server-specific extras (already in main dependencies)
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",
 ]
 
 all = [

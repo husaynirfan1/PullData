@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PullData Web UI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 PullData</h1>
+            <p class="subtitle">RAG System with Deliverable Outputs</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="section">
+                    <h3>Projects</h3>
+                    <div id="projectsList" class="projects-list">
+                        <p class="placeholder">No projects yet</p>
+                    </div>
+                    <button id="refreshProjectsBtn" class="btn btn-secondary">Refresh</button>
+                </div>
+
+                <div class="section">
+                    <h3>New Project</h3>
+                    <input type="text" id="projectName" placeholder="Project name" class="input">
+                    <button id="createProjectBtn" class="btn btn-primary">Create</button>
+                </div>
+
+                <div class="section">
+                    <h3>Status</h3>
+                    <div id="statusInfo" class="status-info">
+                        <p><span class="status-indicator"></span> Connected</p>
+                        <p id="statsDisplay"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Area -->
+            <div class="main-area">
+                <!-- Ingest Section -->
+                <div class="card">
+                    <h2>📁 Ingest Documents</h2>
+                    <div class="form-group">
+                        <label for="ingestProject">Project:</label>
+                        <select id="ingestProject" class="input">
+                            <option value="">Select project...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fileUpload">Upload Files:</label>
+                        <input type="file" id="fileUpload" multiple accept=".pdf,.txt,.md" class="input">
+                    </div>
+
+                    <button id="ingestBtn" class="btn btn-primary btn-large">Ingest Documents</button>
+
+                    <div id="ingestStatus" class="status-message"></div>
+                </div>
+
+                <!-- Query Section -->
+                <div class="card">
+                    <h2>💬 Query Documents</h2>
+                    <div class="form-group">
+                        <label for="queryProject">Project:</label>
+                        <select id="queryProject" class="input">
+                            <option value="">Select project...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="queryText">Query:</label>
+                        <textarea id="queryText" rows="3" placeholder="What are the key findings?" class="input"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="outputFormat">Output Format:</label>
+                        <select id="outputFormat" class="input">
+                            <option value="">None (JSON only)</option>
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="markdown">Markdown (.md)</option>
+                            <option value="json">JSON (.json)</option>
+                            <option value="powerpoint">PowerPoint (.pptx)</option>
+                            <option value="pdf">PDF (.pdf)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="generateAnswer" checked>
+                            Generate LLM Answer
+                        </label>
+                    </div>
+
+                    <button id="queryBtn" class="btn btn-primary btn-large">Query</button>
+
+                    <div id="queryStatus" class="status-message"></div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="card" id="resultsCard" style="display: none;">
+                    <h2>📊 Results</h2>
+
+                    <div class="result-section">
+                        <h3>Answer</h3>
+                        <div id="answerText" class="answer-text"></div>
+                    </div>
+
+                    <div class="result-section" id="outputFileSection" style="display: none;">
+                        <h3>Generated File</h3>
+                        <a id="outputFileLink" class="download-link" target="_blank">📄 Download File</a>
+                    </div>
+
+                    <div class="result-section">
+                        <h3>Sources (<span id="sourcesCount">0</span>)</h3>
+                        <div id="sourcesList" class="sources-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
