@@ -50,29 +50,47 @@ def main():
     
     # Step 3: Query the system
     print("\n3. Querying the system...")
-    
+
     # Basic query (retrieval only, no answer generation)
     # result = pd.query("What are the main topics?", generate_answer=False)
-    
+
     # Query with answer generation (requires LLM)
     # result = pd.query("What are the main topics?", generate_answer=True)
-    
+
+    # Query with automatic output format generation
+    # result = pd.query(
+    #     "What are the main topics?",
+    #     generate_answer=True,
+    #     output_format="excel"  # Creates ./output/{project}_query_{timestamp}.xlsx
+    # )
+    # print(f"Report saved to: {result.output_path}")
+
     # Advanced query with filters
     # result = pd.query(
     #     "What are the financial results?",
     #     k=10,  # Retrieve top 10 chunks
     #     filters={"page_number": {"$gte": 1, "$lte": 10}},  # Only pages 1-10
     #     generate_answer=True,
+    #     output_format="pdf"  # Generate PDF report
     # )
-    
+
     print("   Example query: pd.query('What are the main topics?')")
+    print("   With output: pd.query('...', output_format='excel')")
     
     # Step 4: Access results
     print("\n4. Accessing results...")
-    print("   result.query      - Original query")
-    print("   result.answer     - Generated answer (if LLM enabled)")
-    print("   result.sources    - List of source chunks with scores")
-    print("   result.metadata   - Additional metadata")
+    print("   result.query               - Original query")
+    print("   result.llm_response.text   - Generated answer (if LLM enabled)")
+    print("   result.retrieved_chunks    - List of source chunks with scores")
+    print("   result.output_path         - Path to saved file (if output_format used)")
+    print("   result.metadata            - Additional metadata")
+
+    print("\n   Supported output formats:")
+    print("   - 'excel'      : .xlsx spreadsheet")
+    print("   - 'markdown'   : .md document")
+    print("   - 'json'       : .json structured data")
+    print("   - 'powerpoint' : .pptx presentation")
+    print("   - 'pdf'        : .pdf report")
     
     # Step 5: Get statistics
     print("\n5. Getting system statistics...")

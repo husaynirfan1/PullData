@@ -27,8 +27,8 @@ class APILLM(BaseLLM):
 
     def __init__(
         self,
-        model_name: str = "gpt-3.5-turbo",
-        base_url: str = "https://api.openai.com/v1",
+        model_name: str = "qwen3-1.7b",
+        base_url: str = "http://100.67.99.40:1234",
         api_key: str = "sk-dummy",
         max_tokens: int = 2048,
         temperature: float = 0.7,

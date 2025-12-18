@@ -97,6 +97,28 @@ def main():
     #     temperature=0.3,  # Lower temperature for more factual
     #     max_tokens=500,   # Longer response
     # )
+
+    # Example 5: Query with automatic output format generation
+    print("\n   Example 5: Generate deliverable outputs")
+    query5 = "What was the Q3 revenue and expenses?"
+    print(f"   Query: {query5}")
+
+    # Generate Excel report
+    # result_excel = pd.query(query5, output_format="excel")
+    # print(f"   Excel report: {result_excel.output_path}")
+
+    # Generate PDF report
+    # result_pdf = pd.query(query5, output_format="pdf")
+    # print(f"   PDF report: {result_pdf.output_path}")
+
+    # Generate PowerPoint presentation
+    # result_pptx = pd.query(
+    #     "Create a summary presentation of Q3 results",
+    #     output_format="powerpoint"
+    # )
+    # print(f"   PowerPoint: {result_pptx.output_path}")
+
+    print("   Available formats: excel, markdown, json, powerpoint, pdf")
     
     # Get system statistics
     print("\n4. System Statistics:")

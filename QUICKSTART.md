@@ -47,19 +47,24 @@ cp .env.example .env
 from pulldata import PullData
 
 # Initialize with default local storage
-rag = PullData(project="quickstart")
+pd = PullData(project="quickstart")
 
 # Ingest documents
-rag.ingest("path/to/your/documents/*.pdf")
+stats = pd.ingest("path/to/your/documents/*.pdf")
+print(f"Processed {stats['new_chunks']} chunks")
 
-# Query and generate Excel
-result = rag.query(
+# Query with automatic Excel generation
+result = pd.query(
     query="What are the key financial metrics?",
-    output_format="excel"
+    output_format="excel"  # File automatically saved to ./output/
 )
 
-# Save output
-result.save("financial_metrics.xlsx")
+print(f"Answer: {result.llm_response.text}")
+print(f"Report saved to: {result.output_path}")
+print(f"Sources: {len(result.retrieved_chunks)}")
+
+# Cleanup
+pd.close()
 ```
 
 ### Option 2: Command Line
@@ -200,41 +205,54 @@ models:
 
 ## Output Formats
 
-### Excel
+PullData automatically generates deliverable files in multiple formats!
+
+### Excel (.xlsx)
 ```python
-result = rag.query(
+result = pd.query(
     query="Extract revenue by region",
-    output_format="excel"
+    output_format="excel"  # Automatically saved to ./output/
 )
-result.save("revenue.xlsx")
+print(f"Excel report: {result.output_path}")
 ```
 
-### Markdown
+### Markdown (.md)
 ```python
-result = rag.query(
+result = pd.query(
     query="Summarize key findings",
     output_format="markdown"
 )
-result.save("summary.md")
+print(f"Markdown summary: {result.output_path}")
 ```
 
-### JSON
+### JSON (.json)
 ```python
-result = rag.query(
+result = pd.query(
     query="Extract structured data",
     output_format="json"
 )
-result.save("data.json")
+print(f"JSON data: {result.output_path}")
 ```
 
-### PowerPoint
+### PowerPoint (.pptx)
 ```python
-result = rag.query(
+result = pd.query(
     query="Create presentation slides",
-    output_format="pptx"
+    output_format="powerpoint"
 )
-result.save("presentation.pptx")
+print(f"PowerPoint: {result.output_path}")
 ```
+
+### PDF (.pdf)
+```python
+result = pd.query(
+    query="Generate report",
+    output_format="pdf"
+)
+print(f"PDF report: {result.output_path}")
+```
+
+**Note:** Files are automatically saved to `./output/{project}_query_{timestamp}.{format}` with the full path available in `result.output_path`.
 
 ## Advanced Features
 
@@ -256,10 +274,11 @@ result = rag.query(
 
 ```python
 # First ingest (full processing)
-rag.ingest("report.pdf")
+pd.ingest("report.pdf")
 
 # Update document (only changed content re-processed)
-rag.ingest("report.pdf")  # Much faster!
+stats = pd.ingest("report.pdf")
+print(f"Skipped {stats['skipped_chunks']} unchanged chunks")  # Much faster!
 ```
 
 ### Multi-Project Management
@@ -273,16 +292,11 @@ finance.ingest("financial_docs/*.pdf")
 legal.ingest("legal_docs/*.pdf")
 
 # Each project has isolated storage
-```
+finance_result = finance.query("What's Q3 revenue?", output_format="excel")
+legal_result = legal.query("What are the terms?", output_format="pdf")
 
-### Cache Benefits
-
-```python
-# First query (LLM inference ~2s)
-result1 = rag.query("What's Q3 revenue?")
-
-# Same query (cache hit ~0.01s)
-result2 = rag.query("What's Q3 revenue?")
+finance.close()
+legal.close()
 ```
 
 ## Troubleshooting
@@ -361,14 +375,52 @@ make clean
 
 ## Examples
 
-See [examples/](examples/) directory for:
-- Financial report extraction
-- Legal document processing
-- Research paper analysis
-- Table extraction demos
+See [examples/](examples/) directory for complete working examples:
+
+- **[basic_usage.py](examples/basic_usage.py)** - Simple RAG query workflow
+- **[lm_studio_api_embeddings.py](examples/lm_studio_api_embeddings.py)** - Using LM Studio for embeddings and LLM
+- **[query_with_output_formats.py](examples/query_with_output_formats.py)** - End-to-end with all output formats
+- **[output_formats_example.py](examples/output_formats_example.py)** - Standalone formatter usage
+- **[pdf_ingestion_example.py](examples/pdf_ingestion_example.py)** - PDF processing and ingestion
+
+### Complete Working Example
+
+```python
+from pathlib import Path
+from pulldata import PullData
+
+# Initialize
+pd = PullData(
+    project="financial_analysis",
+    config_path="configs/lm_studio_api_embeddings.yaml"
+)
+
+# Ingest documents
+stats = pd.ingest("financial_reports/*.pdf")
+print(f"Ingested {stats['new_chunks']} chunks from {stats['processed_files']} files")
+
+# Query with Excel output
+result = pd.query(
+    query="What was the total revenue in Q3 2024?",
+    output_format="excel"
+)
+
+print(f"\nAnswer: {result.llm_response.text}")
+print(f"Sources: {len(result.retrieved_chunks)}")
+print(f"Excel report saved to: {result.output_path}")
+
+# Query with PowerPoint output
+presentation = pd.query(
+    query="Create a summary of key financial metrics",
+    output_format="powerpoint"
+)
+print(f"PowerPoint saved to: {presentation.output_path}")
+
+pd.close()
+```
 
 ---
 
 **Version**: 0.1.0
 **Status**: Alpha
-**Last Updated**: 2025-12-17
+**Last Updated**: 2024-12-18
