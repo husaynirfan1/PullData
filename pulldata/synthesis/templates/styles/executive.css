@@ -1,251 +1,463 @@
-/**
- * Style A: "The Executive"
- * Clean, minimalist design with generous whitespace
- * Blue/grey color palette with emphasis on the summary box
- */
+:root {
+    --primary: #1a365d;
+    --primary-light: #2c5282;
+    --secondary: #c5a572;
+    --accent: #e2e8f0;
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --bg-page: #ffffff;
+    --bg-card: #f7fafc;
 
-/* Page Setup */
-@page {
-    size: A4;
-    margin: 2.5cm 2cm;
-    @bottom-right {
-        content: "Page " counter(page) " of " counter(pages);
-        font-size: 9pt;
-        color: #64748b;
-    }
-}
+    /* Gradients */
+    --gradient-header: linear-gradient(135deg, #1a365d 0%, #2a4365 100%);
+    --gradient-card: linear-gradient(145deg, #ffffff 0%, #f7fafc 100%);
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 body {
-    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 11pt;
-    line-height: 1.7;
-    color: #1e293b;
-    background: #ffffff;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+    background-color: var(--bg-page);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 600;
-    line-height: 1.3;
-    color: #0f172a;
-    page-break-after: avoid;
+/* Background Decoration */
+.bg-decoration {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
 }
 
-h1 { font-size: 28pt; margin-bottom: 8pt; }
-h2 { font-size: 18pt; margin-top: 24pt; margin-bottom: 12pt; }
-h3 { font-size: 14pt; margin-top: 18pt; margin-bottom: 8pt; }
+.bg-shape-1 {
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(197, 165, 114, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+}
 
-p {
-    margin-bottom: 12pt;
-    text-align: justify;
+.bg-shape-2 {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background: var(--gradient-header);
 }
 
 /* Header */
 .report-header {
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-    color: white;
-    padding: 40pt 32pt;
-    margin: -2.5cm -2cm 24pt -2cm;
-    page-break-after: avoid;
+    padding: 3rem 4rem;
+    position: relative;
+    border-bottom: 2px solid var(--accent);
+    margin-bottom: 4rem;
+}
+
+.header-decoration {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    color: var(--secondary);
+}
+
+.decoration-line {
+    height: 1px;
+    background-color: var(--secondary);
+    width: 40px;
+}
+
+.decoration-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--secondary);
+    border-radius: 50%;
+}
+
+.brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Outfit', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary-light);
+    margin-bottom: 1.5rem;
+}
+
+.brand-icon {
+    color: var(--secondary);
 }
 
 .report-title {
-    font-size: 32pt;
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
     font-weight: 700;
-    margin: 0 0 8pt 0;
-    letter-spacing: -0.02em;
+    color: var(--primary);
+    line-height: 1.1;
+    margin: 0 0 1rem 0;
 }
 
 .report-subtitle {
-    font-size: 14pt;
-    opacity: 0.95;
-    font-weight: 400;
-    margin-bottom: 16pt;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    margin: 0 0 2rem 0;
+    max-width: 80%;
 }
 
 .report-meta {
     display: flex;
-    gap: 20pt;
-    font-size: 10pt;
-    opacity: 0.9;
-    margin-top: 16pt;
-    padding-top: 16pt;
-    border-top: 1px solid rgba(255,255,255,0.3);
+    gap: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--accent);
 }
 
 .meta-item {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
-/* Summary Section - Emphasized */
-.summary-section {
-    background: #f1f5f9;
-    border-left: 4pt solid #0ea5e9;
-    padding: 24pt;
-    margin-bottom: 32pt;
-    page-break-inside: avoid;
-}
-
-.summary-heading {
-    font-size: 16pt;
-    color: #0284c7;
-    margin-bottom: 12pt;
+.meta-label {
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: var(--secondary);
     font-weight: 700;
 }
 
-.summary-content {
-    font-size: 12pt;
-    line-height: 1.8;
-    color: #334155;
+.meta-value {
+    font-weight: 500;
+    color: var(--primary);
 }
 
-/* Metrics Grid */
+.meta-icon {
+    display: none;
+}
+
+/* Executive Summary */
+.summary-section {
+    margin: 0 4rem 4rem 4rem;
+}
+
+.summary-wrapper {
+    background: var(--gradient-card);
+    border-left: 4px solid var(--secondary);
+    padding: 2.5rem;
+    border-radius: 0 8px 8px 0;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+
+.summary-badge {
+    position: absolute;
+    top: -12px;
+    left: 2rem;
+    background: var(--primary);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: var(--shadow-md);
+}
+
+.badge-icon {
+    margin-right: 0.5rem;
+    color: var(--secondary);
+}
+
+.summary-quote-mark {
+    color: rgba(197, 165, 114, 0.2);
+    font-family: 'Playfair Display', serif;
+    font-size: 6rem;
+    position: absolute;
+    top: 1rem;
+    right: 2rem;
+    line-height: 0;
+}
+
+.summary-text {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+    margin: 0;
+}
+
+/* Metrics */
 .metrics-section {
-    margin-bottom: 32pt;
-    page-break-inside: avoid;
+    margin: 0 4rem 4rem 4rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.section-icon {
+    font-size: 1.5rem;
+}
+
+.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin: 0;
+}
+
+.section-line {
+    flex-grow: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--accent), transparent);
 }
 
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16pt;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
 }
 
 .metric-card {
     background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8pt;
-    padding: 20pt;
-    text-align: center;
-    transition: transform 0.2s;
-}
-
-.metric-icon {
-    font-size: 24pt;
-    margin-bottom: 8pt;
-}
-
-.metric-label {
-    font-size: 9pt;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 6pt;
+    padding: 1.5rem;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease;
 }
 
 .metric-value {
-    font-size: 22pt;
-    font-weight: 700;
-    color: #0ea5e9;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+    font-family: 'Outfit', sans-serif;
 }
 
-/* Main Content */
+.metric-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.metric-bar {
+    height: 3px;
+    background: var(--secondary);
+    width: 40px;
+    margin-top: 1rem;
+    opacity: 0.5;
+}
+
+.metric-glow,
+.metric-icon {
+    display: none;
+}
+
+/* Content Sections */
 .report-content {
-    max-width: 100%;
+    margin: 0 4rem 4rem 4rem;
 }
 
 .content-section {
-    margin-bottom: 32pt;
+    margin-bottom: 4rem;
     page-break-inside: avoid;
 }
 
+.section-number {
+    font-family: 'Outfit', sans-serif;
+    font-size: 3rem;
+    font-weight: 900;
+    color: rgba(26, 54, 93, 0.05);
+    line-height: 1;
+    margin-right: -1rem;
+    z-index: -1;
+}
+
 .section-heading {
-    color: #0284c7;
-    border-bottom: 2pt solid #e2e8f0;
-    padding-bottom: 8pt;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--primary);
+    margin: 0;
+}
+
+.section-body {
+    padding-left: 2rem;
+    border-left: 1px solid var(--accent);
+    margin-top: 1rem;
 }
 
 .section-content {
-    margin-top: 16pt;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.section-content h3 {
+    font-family: 'Outfit', sans-serif;
+    color: var(--primary);
+    margin-top: 2rem;
+}
+
+.section-content ul,
+.section-content ol {
+    padding-left: 1.5rem;
+}
+
+.section-content li {
+    margin-bottom: 0.5rem;
 }
 
 /* Subsections */
-.subsections {
-    margin-top: 20pt;
-    margin-left: 16pt;
+.subsection {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    border: 1px solid var(--accent);
+    display: flex;
+    gap: 1rem;
 }
 
-.subsection {
-    margin-bottom: 20pt;
+.subsection-marker {
+    color: var(--secondary);
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
 }
 
 .subsection-heading {
-    color: #475569;
-}
-
-.subsection-content {
-    margin-top: 8pt;
-    color: #64748b;
+    font-family: 'Outfit', sans-serif;
+    color: var(--primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
 }
 
 /* References */
 .references-section {
-    margin-top: 40pt;
-    padding-top: 24pt;
-    border-top: 2pt solid #e2e8f0;
-    page-break-before: auto;
+    margin: 4rem;
+    padding: 3rem;
+    background: var(--bg-card);
+    border-top: 4px solid var(--primary);
 }
 
-.references-heading {
-    font-size: 16pt;
-    color: #0f172a;
-    margin-bottom: 16pt;
+.references-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
-.references-list {
-    padding-left: 20pt;
+.references-title {
+    font-family: 'Playfair Display', serif;
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.5rem;
 }
 
 .reference-item {
-    margin-bottom: 12pt;
-    font-size: 9pt;
-    color: #475569;
-    line-height: 1.6;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--accent);
+}
+
+.reference-number {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    color: var(--secondary);
+    min-width: 1.5rem;
+}
+
+.reference-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
 }
 
 .reference-link {
-    color: #0ea5e9;
+    color: var(--primary-light);
     text-decoration: none;
-    word-break: break-all;
+    font-size: 0.9rem;
 }
 
-.reference-page,
-.reference-score {
-    color: #94a3b8;
-    font-size: 8pt;
-    margin-left: 8pt;
+.reference-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
 }
 
 /* Footer */
 .report-footer {
-    margin-top: 48pt;
-    padding-top: 16pt;
-    border-top: 1pt solid #e2e8f0;
-    text-align: center;
-    font-size: 8pt;
-    color: #94a3b8;
+    margin-top: auto;
+    background: var(--primary);
+    color: white;
+    padding: 3rem 4rem;
 }
 
-/* Print Optimizations */
-@media print {
-    .report-header,
-    .summary-section,
-    .metrics-section,
-    .content-section,
-    .subsection {
-        page-break-inside: avoid;
-    }
+.footer-decoration {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0.3;
+    margin-bottom: 2rem;
+}
 
-    .section-heading,
-    .subsection-heading {
-        page-break-after: avoid;
-    }
+.footer-line {
+    flex-grow: 1;
+    height: 1px;
+    background: white;
+}
+
+.footer-diamond {
+    font-size: 0.8rem;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+}
+
+.footer-timestamp {
+    opacity: 0.6;
+    font-size: 0.9rem;
+}
+
+.footer-tagline {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    opacity: 0.4;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }

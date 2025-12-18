@@ -1,56 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ data.title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <style>
-        {{ style_css }}
+        {
+                {
+                style_css
+            }
+        }
     </style>
 </head>
+
 <body class="style-{{ style_name }}">
-    <!-- Header -->
+    <!-- Decorative Background Elements -->
+    <div class="bg-decoration">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+        <div class="bg-shape bg-shape-3"></div>
+    </div>
+
+    <!-- Cover Page / Header -->
     <header class="report-header">
+        <div class="header-decoration">
+            <div class="decoration-line"></div>
+            <div class="decoration-dot"></div>
+            <div class="decoration-line"></div>
+        </div>
+
         <div class="header-content">
+            <div class="brand-mark">
+                <span class="brand-icon">◆</span>
+                <span class="brand-text">PullData Report</span>
+            </div>
+
             <h1 class="report-title">{{ data.title }}</h1>
+
             {% if data.subtitle %}
             <p class="report-subtitle">{{ data.subtitle }}</p>
             {% endif %}
+
             {% if data.metadata %}
             <div class="report-meta">
                 {% if data.metadata.get('author') %}
-                <span class="meta-item">By: {{ data.metadata.author }}</span>
+                <div class="meta-item">
+                    <span class="meta-icon">✦</span>
+                    <span class="meta-label">Author</span>
+                    <span class="meta-value">{{ data.metadata.author }}</span>
+                </div>
                 {% endif %}
-                {% if data.metadata.get('date') %}
-                <span class="meta-item">Date: {{ data.metadata.date }}</span>
+                {% if data.metadata.get('date') or data.metadata.get('generated_at') %}
+                <div class="meta-item">
+                    <span class="meta-icon">◈</span>
+                    <span class="meta-label">Date</span>
+                    <span class="meta-value">{{ data.metadata.date or data.metadata.generated_at }}</span>
+                </div>
                 {% endif %}
                 {% if data.metadata.get('version') %}
-                <span class="meta-item">Version: {{ data.metadata.version }}</span>
+                <div class="meta-item">
+                    <span class="meta-icon">◇</span>
+                    <span class="meta-label">Version</span>
+                    <span class="meta-value">{{ data.metadata.version }}</span>
+                </div>
                 {% endif %}
             </div>
             {% endif %}
         </div>
+
+        <div class="header-accent"></div>
     </header>
 
-    <!-- Summary Box -->
+    <!-- Executive Summary - Hero Section -->
     <section class="summary-section">
-        <h2 class="summary-heading">Executive Summary</h2>
-        <div class="summary-content">
-            <p>{{ data.summary }}</p>
+        <div class="summary-wrapper">
+            <div class="summary-badge">
+                <span class="badge-icon">★</span>
+                <span class="badge-text">Executive Summary</span>
+            </div>
+            <div class="summary-content">
+                <div class="summary-quote-mark">"</div>
+                <p class="summary-text">{{ data.summary }}</p>
+            </div>
+            <div class="summary-decoration"></div>
         </div>
     </section>
 
-    <!-- Metrics Dashboard -->
+    <!-- Key Metrics Dashboard -->
     {% if data.metrics %}
     <section class="metrics-section">
+        <div class="section-header">
+            <div class="section-icon">📊</div>
+            <h2 class="section-title">Key Metrics</h2>
+            <div class="section-line"></div>
+        </div>
+
         <div class="metrics-grid">
             {% for metric in data.metrics %}
-            <div class="metric-card">
+            <div class="metric-card" style="--card-index: {{ loop.index }}">
+                <div class="metric-glow"></div>
                 {% if metric.icon %}
                 <div class="metric-icon">{{ metric.icon }}</div>
                 {% endif %}
-                <div class="metric-label">{{ metric.label }}</div>
                 <div class="metric-value">{{ metric.value }}</div>
+                <div class="metric-label">{{ metric.label }}</div>
+                <div class="metric-bar"></div>
             </div>
             {% endfor %}
         </div>
@@ -60,10 +120,17 @@
     <!-- Main Content Sections -->
     <main class="report-content">
         {% for section in data.sections %}
-        <section class="content-section">
-            <h2 class="section-heading">{{ section.heading }}</h2>
-            <div class="section-content">
-                {{ section.content | safe }}
+        <section class="content-section" style="--section-index: {{ loop.index }}">
+            <div class="section-header">
+                <div class="section-number">{{ "%02d"|format(loop.index) }}</div>
+                <h2 class="section-heading">{{ section.heading }}</h2>
+            </div>
+
+            <div class="section-body">
+                <div class="section-accent-line"></div>
+                <div class="section-content">
+                    {{ section.content | safe }}
+                </div>
             </div>
 
             <!-- Subsections -->
@@ -71,9 +138,12 @@
             <div class="subsections">
                 {% for subsection in section.subsections %}
                 <div class="subsection">
-                    <h3 class="subsection-heading">{{ subsection.heading }}</h3>
-                    <div class="subsection-content">
-                        {{ subsection.content | safe }}
+                    <div class="subsection-marker">◆</div>
+                    <div class="subsection-wrapper">
+                        <h3 class="subsection-heading">{{ subsection.heading }}</h3>
+                        <div class="subsection-content">
+                            {{ subsection.content | safe }}
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -86,32 +156,61 @@
     <!-- References / Citations -->
     {% if data.references %}
     <section class="references-section">
-        <h2 class="references-heading">References</h2>
-        <ol class="references-list">
+        <div class="references-header">
+            <div class="references-icon">📚</div>
+            <h2 class="references-title">References & Sources</h2>
+        </div>
+
+        <div class="references-container">
             {% for ref in data.references %}
-            <li class="reference-item">
-                <strong>{{ ref.title }}</strong>
-                {% if ref.url %}
-                <br><a href="{{ ref.url }}" class="reference-link">{{ ref.url }}</a>
-                {% endif %}
-                {% if ref.page %}
-                <span class="reference-page">(Page {{ ref.page }})</span>
-                {% endif %}
-                {% if ref.relevance_score %}
-                <span class="reference-score">Relevance: {{ "%.0f"|format(ref.relevance_score * 100) }}%</span>
-                {% endif %}
-            </li>
+            <div class="reference-item">
+                <div class="reference-number">{{ loop.index }}</div>
+                <div class="reference-content">
+                    <div class="reference-title">{{ ref.title }}</div>
+                    {% if ref.url %}
+                    <a href="{{ ref.url }}" class="reference-link">{{ ref.url }}</a>
+                    {% endif %}
+                    <div class="reference-meta">
+                        {% if ref.page %}
+                        <span class="reference-page">
+                            <span class="page-icon">📄</span>
+                            Page {{ ref.page }}
+                        </span>
+                        {% endif %}
+                        {% if ref.relevance_score %}
+                        <span class="reference-score">
+                            <span class="score-icon">⚡</span>
+                            {{ "%.0f"|format(ref.relevance_score * 100) }}% relevance
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
             {% endfor %}
-        </ol>
+        </div>
     </section>
     {% endif %}
 
     <!-- Footer -->
     <footer class="report-footer">
-        <p>Generated by PullData RAG System</p>
-        {% if data.metadata.get('generated_at') %}
-        <p>Generated: {{ data.metadata.generated_at }}</p>
-        {% endif %}
+        <div class="footer-decoration">
+            <div class="footer-line"></div>
+            <div class="footer-diamond">◆</div>
+            <div class="footer-line"></div>
+        </div>
+
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="footer-logo">⚡</span>
+                <span class="footer-name">Generated by PullData Intelligence</span>
+            </div>
+            {% if data.metadata.get('generated_at') %}
+            <div class="footer-timestamp">{{ data.metadata.generated_at }}</div>
+            {% endif %}
+        </div>
+
+        <div class="footer-tagline">AI-Powered Document Intelligence</div>
     </footer>
 </body>
+
 </html>
