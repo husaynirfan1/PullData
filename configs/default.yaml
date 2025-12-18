@@ -31,14 +31,17 @@ storage:
 
 # Model Configuration
 models:
-  # Embedding Model
   embedder:
-    name: BAAI/bge-small-en-v1.5
-    dimension: 384
-    batch_size: 32
-    device: cuda  # or 'cpu'
-    normalize_embeddings: true
-    cache_dir: ./models/embeddings
+      provider: api  # Use 'api' for LM Studio embeddings
+      dimension: 1024  # Adjust based on your embedding model (qwen3 = 1024D)
+      
+      api:
+        base_url: http://localhost:1234/v1  # LM Studio URL
+        api_key: lm-studio
+        model: text-embedding-qwen3-embedding-0.6b  # Your loaded embedding model name
+        timeout: 60
+        max_retries: 3
+        batch_size: 100  # Process 100 texts per API call
 
   # Language Model
   llm:

@@ -108,30 +108,61 @@ def get_or_create_project(project: str, config_path: Optional[str] = None) -> Pu
     return active_projects[project]
 
 
+# Configure logging
+import logging
+logger = logging.getLogger("uvicorn.error")
+
 def load_existing_projects():
     """Load existing projects from data directory."""
-    data_dir = Path("./data")
+    # Use absolute path based on CWD
+    data_dir = Path.cwd() / "data"
+    
+    msg = f"Checking for projects in: {data_dir.absolute()}"
+    logger.info(msg)
+    print(msg) # Ensure visibility
+    
     if not data_dir.exists():
+        msg = f"Data directory not found at: {data_dir.absolute()}"
+        logger.warning(msg)
+        print(msg)
         return
 
     print("Loading existing projects...")
+    logger.info("Loading existing projects...")
+    count = 0
     for item in data_dir.iterdir():
         if item.is_dir():
             project_name = item.name
             try:
                 # Check if it looks like a project (has metadata.db)
                 if (item / "metadata.db").exists():
-                    print(f"  • Loading project: {project_name}")
-                    active_projects[project_name] = PullData(project=project_name)
+                    msg = f"  • Loading project: {project_name}"
+                    logger.info(msg)
+                    print(msg)
+                    
+                    if project_name not in active_projects:
+                        active_projects[project_name] = PullData(project=project_name)
+                        count += 1
+                    else:
+                        logger.info(f"    (Project '{project_name}' already active)")
             except Exception as e:
-                print(f"  ❌ Failed to load project {project_name}: {e}")
-    print(f"Loaded {len(active_projects)} projects.")
+                msg = f"  ❌ Failed to load project {project_name}: {e}"
+                logger.error(msg)
+                print(msg)
+                
+    msg = f"Loaded {count} existing projects. Total active: {len(active_projects)}"
+    logger.info(msg)
+    print(msg)
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize on startup."""
-    load_existing_projects()
+    try:
+        load_existing_projects()
+    except Exception as e:
+        logger.error(f"Error during startup project loading: {e}")
+        print(f"Error during startup project loading: {e}")
 
 
 @app.get("/")
