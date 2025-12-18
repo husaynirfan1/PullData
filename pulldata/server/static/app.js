@@ -7,43 +7,88 @@ let currentProject = null;
 let projects = [];
 let configs = [];
 
-// DOM Elements
-const elements = {
-    projectsList: document.getElementById('projectsList'),
-    projectName: document.getElementById('projectName'),
-    createProjectBtn: document.getElementById('createProjectBtn'),
-    refreshProjectsBtn: document.getElementById('refreshProjectsBtn'),
-    ingestProject: document.getElementById('ingestProject'),
-    ingestConfig: document.getElementById('ingestConfig'),
-    queryProject: document.getElementById('queryProject'),
-    queryConfig: document.getElementById('queryConfig'),
-    fileUpload: document.getElementById('fileUpload'),
-    ingestBtn: document.getElementById('ingestBtn'),
-    ingestStatus: document.getElementById('ingestStatus'),
-    queryText: document.getElementById('queryText'),
-    outputFormat: document.getElementById('outputFormat'),
-    generateAnswer: document.getElementById('generateAnswer'),
-    queryBtn: document.getElementById('queryBtn'),
-    queryStatus: document.getElementById('queryStatus'),
-    resultsCard: document.getElementById('resultsCard'),
-    answerText: document.getElementById('answerText'),
-    sourcesCount: document.getElementById('sourcesCount'),
-    sourcesList: document.getElementById('sourcesList'),
-    outputFileSection: document.getElementById('outputFileSection'),
-    outputFileLink: document.getElementById('outputFileLink'),
-    statsDisplay: document.getElementById('statsDisplay'),
-};
+// DOM Elements object (populated on init)
+let elements = {};
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('App initializing...');
+
+    // Populate elements
+    elements = {
+        projectsList: document.getElementById('projectsList'),
+        projectName: document.getElementById('projectName'),
+        createProjectBtn: document.getElementById('createProjectBtn'),
+        refreshProjectsBtn: document.getElementById('refreshProjectsBtn'),
+        ingestProject: document.getElementById('ingestProject'),
+        ingestConfig: document.getElementById('ingestConfig'),
+        queryProject: document.getElementById('queryProject'),
+        queryConfig: document.getElementById('queryConfig'),
+        fileUpload: document.getElementById('fileUpload'),
+        ingestBtn: document.getElementById('ingestBtn'),
+        ingestStatus: document.getElementById('ingestStatus'),
+        queryText: document.getElementById('queryText'),
+        outputFormat: document.getElementById('outputFormat'),
+        generateAnswer: document.getElementById('generateAnswer'),
+        queryBtn: document.getElementById('queryBtn'),
+        queryStatus: document.getElementById('queryStatus'),
+        resultsCard: document.getElementById('resultsCard'),
+        answerText: document.getElementById('answerText'),
+        sourcesCount: document.getElementById('sourcesCount'),
+        sourcesList: document.getElementById('sourcesList'),
+        outputFileSection: document.getElementById('outputFileSection'),
+        outputFileLink: document.getElementById('outputFileLink'),
+        themeCheckbox: document.getElementById('checkbox'),
+    };
+
+    console.log('Elements loaded. Checkbox found:', !!elements.themeCheckbox);
+
+    initTheme();
     checkHealth();
     loadProjects();
     loadConfigs();
     setupEventListeners();
 });
 
+// Theme Functions
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    // Default to light if no preference
+    let theme = 'light';
+    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+        theme = 'dark';
+    }
+
+    setTheme(theme);
+}
+
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+
+    // Update checkbox state
+    if (elements.themeCheckbox) {
+        elements.themeCheckbox.checked = (theme === 'dark');
+    }
+    console.log(`Theme set to: ${theme}`);
+}
+
+function toggleTheme(e) {
+    if (e.target.checked) {
+        setTheme('dark');
+    } else {
+        setTheme('light');
+    }
+}
+
 // Event Listeners
 function setupEventListeners() {
+    if (elements.themeCheckbox) {
+        elements.themeCheckbox.addEventListener('change', toggleTheme);
+    }
+
     elements.createProjectBtn.addEventListener('click', createProject);
     elements.refreshProjectsBtn.addEventListener('click', loadProjects);
     elements.ingestBtn.addEventListener('click', ingestDocuments);

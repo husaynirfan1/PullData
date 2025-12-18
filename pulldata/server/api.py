@@ -100,7 +100,38 @@ def get_or_create_project(project: str, config_path: Optional[str] = None) -> Pu
             project=project,
             config_path=config_path,
         )
+    if project not in active_projects:
+        active_projects[project] = PullData(
+            project=project,
+            config_path=config_path,
+        )
     return active_projects[project]
+
+
+def load_existing_projects():
+    """Load existing projects from data directory."""
+    data_dir = Path("./data")
+    if not data_dir.exists():
+        return
+
+    print("Loading existing projects...")
+    for item in data_dir.iterdir():
+        if item.is_dir():
+            project_name = item.name
+            try:
+                # Check if it looks like a project (has metadata.db)
+                if (item / "metadata.db").exists():
+                    print(f"  • Loading project: {project_name}")
+                    active_projects[project_name] = PullData(project=project_name)
+            except Exception as e:
+                print(f"  ❌ Failed to load project {project_name}: {e}")
+    print(f"Loaded {len(active_projects)} projects.")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize on startup."""
+    load_existing_projects()
 
 
 @app.get("/")
