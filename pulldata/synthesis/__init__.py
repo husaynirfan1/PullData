@@ -9,7 +9,13 @@ Converts structured data into various output formats:
 - PDF
 """
 
-from pulldata.synthesis.base import FormatConfig, FormatterError, OutputData, OutputFormatter
+from pulldata.synthesis.base import (
+    FormatConfig,
+    FormatterError,
+    OutputData,
+    OutputFormatter,
+    strip_reasoning_tags,
+)
 from pulldata.synthesis.formatters import (
     ExcelFormatter,
     JSONFormatter,
@@ -24,6 +30,7 @@ __all__ = [
     "OutputData",
     "FormatConfig",
     "FormatterError",
+    "strip_reasoning_tags",
     # Formatters
     "ExcelFormatter",
     "MarkdownFormatter",

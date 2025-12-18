@@ -4,6 +4,7 @@ This module provides the abstract base class that all formatters must implement,
 along with common utilities for file I/O, validation, and configuration.
 """
 
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -21,6 +22,49 @@ class FormatterError(PullDataError):
     def __init__(self, message: str, formatter: str, details: Optional[Dict[str, Any]] = None):
         super().__init__(message, details or {})
         self.formatter = formatter
+
+
+def strip_reasoning_tags(text: str) -> str:
+    """Remove LLM reasoning tags from text.
+
+    Strips common reasoning tags like <think>, <thinking>, <reflection>, etc.
+    that some models output during chain-of-thought reasoning.
+
+    Args:
+        text: Text potentially containing reasoning tags
+
+    Returns:
+        Text with reasoning tags removed
+
+    Examples:
+        >>> strip_reasoning_tags("Answer: 42 <think>Let me verify...</think>")
+        "Answer: 42 "
+        >>> strip_reasoning_tags("<thinking>Working...</thinking>The result is 5")
+        "The result is 5"
+    """
+    if not text:
+        return text
+
+    # List of reasoning tag patterns to remove
+    reasoning_tags = [
+        r'<think>.*?</think>',
+        r'<thinking>.*?</thinking>',
+        r'<reflection>.*?</reflection>',
+        r'<reasoning>.*?</reasoning>',
+        r'<analysis>.*?</analysis>',
+        r'<scratchpad>.*?</scratchpad>',
+    ]
+
+    # Remove all reasoning tags (case-insensitive, dotall mode for multiline)
+    cleaned = text
+    for pattern in reasoning_tags:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE | re.DOTALL)
+
+    # Clean up extra whitespace
+    cleaned = re.sub(r'\n\s*\n\s*\n', '\n\n', cleaned)  # Remove excessive newlines
+    cleaned = cleaned.strip()
+
+    return cleaned
 
 
 @dataclass

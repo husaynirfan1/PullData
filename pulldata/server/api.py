@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from pulldata import PullData
 from pulldata.core.datatypes import QueryResult
+from pulldata.synthesis import strip_reasoning_tags
 
 
 # Pydantic models for request/response
@@ -306,9 +307,14 @@ async def query_documents(request: QueryRequest):
         )
 
         # Convert to response format
+        # Strip reasoning tags from answer
+        answer_text = result.llm_response.text if result.llm_response else None
+        if answer_text:
+            answer_text = strip_reasoning_tags(answer_text)
+
         return {
             "query": result.query,
-            "answer": result.llm_response.text if result.llm_response else None,
+            "answer": answer_text,
             "sources": [
                 {
                     "document_id": chunk.chunk.document_id,

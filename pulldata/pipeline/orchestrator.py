@@ -33,7 +33,7 @@ from pulldata.rag.retriever import Retriever
 from pulldata.storage.hybrid_search import HybridSearchEngine
 from pulldata.storage.metadata_store import MetadataStore
 from pulldata.storage.vector_store import VectorStore
-from pulldata.synthesis import OutputData, OutputFormatter
+from pulldata.synthesis import OutputData, OutputFormatter, strip_reasoning_tags
 from pulldata.synthesis.formatters import (
     ExcelFormatter,
     MarkdownFormatter,
@@ -550,6 +550,9 @@ class PullData:
             OutputData object ready for formatting
         """
         answer_text = result.llm_response.text if result.llm_response else "No answer generated"
+
+        # Strip reasoning tags from LLM output (e.g., <think>, <thinking>, etc.)
+        answer_text = strip_reasoning_tags(answer_text)
 
         sources = [
             {
