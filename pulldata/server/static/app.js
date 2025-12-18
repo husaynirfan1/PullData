@@ -5,6 +5,7 @@ const API_URL = 'http://localhost:8000';
 // State
 let currentProject = null;
 let projects = [];
+let configs = [];
 
 // DOM Elements
 const elements = {
@@ -13,7 +14,9 @@ const elements = {
     createProjectBtn: document.getElementById('createProjectBtn'),
     refreshProjectsBtn: document.getElementById('refreshProjectsBtn'),
     ingestProject: document.getElementById('ingestProject'),
+    ingestConfig: document.getElementById('ingestConfig'),
     queryProject: document.getElementById('queryProject'),
+    queryConfig: document.getElementById('queryConfig'),
     fileUpload: document.getElementById('fileUpload'),
     ingestBtn: document.getElementById('ingestBtn'),
     ingestStatus: document.getElementById('ingestStatus'),
@@ -35,6 +38,7 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     checkHealth();
     loadProjects();
+    loadConfigs();
     setupEventListeners();
 });
 
@@ -67,6 +71,36 @@ async function loadProjects() {
     } catch (error) {
         console.error('Failed to load projects:', error);
     }
+}
+
+async function loadConfigs() {
+    try {
+        const response = await fetch(`${API_URL}/configs`);
+        const data = await response.json();
+        configs = data.configs;
+        updateConfigsUI();
+    } catch (error) {
+        console.error('Failed to load configs:', error);
+    }
+}
+
+function updateConfigsUI() {
+    // Build config options
+    const configOptions = configs.map(config =>
+        `<option value="${config.path}">${config.name}</option>`
+    ).join('');
+
+    // Update ingest config dropdown
+    elements.ingestConfig.innerHTML = `
+        <option value="">Default (configs/default.yaml)</option>
+        ${configOptions}
+    `;
+
+    // Update query config dropdown
+    elements.queryConfig.innerHTML = `
+        <option value="">Use project default</option>
+        ${configOptions}
+    `;
 }
 
 function updateProjectsUI() {
@@ -142,6 +176,7 @@ function createProject() {
 
 async function ingestDocuments() {
     const project = elements.ingestProject.value;
+    const configPath = elements.ingestConfig.value;
     const files = elements.fileUpload.files;
 
     if (!project) {
@@ -163,7 +198,13 @@ async function ingestDocuments() {
             formData.append('files', file);
         }
 
-        const response = await fetch(`${API_URL}/ingest/upload?project=${project}`, {
+        // Build URL with optional config_path
+        let url = `${API_URL}/ingest/upload?project=${project}`;
+        if (configPath) {
+            url += `&config_path=${encodeURIComponent(configPath)}`;
+        }
+
+        const response = await fetch(url, {
             method: 'POST',
             body: formData,
         });
@@ -196,6 +237,7 @@ async function ingestDocuments() {
 
 async function queryDocuments() {
     const project = elements.queryProject.value;
+    const configPath = elements.queryConfig.value;
     const query = elements.queryText.value.trim();
     const outputFormat = elements.outputFormat.value || null;
     const generateAnswer = elements.generateAnswer.checked;
@@ -215,18 +257,25 @@ async function queryDocuments() {
     elements.resultsCard.style.display = 'none';
 
     try {
+        const requestBody = {
+            project,
+            query,
+            k: 5,
+            generate_answer: generateAnswer,
+            output_format: outputFormat,
+        };
+
+        // Add config_path if specified
+        if (configPath) {
+            requestBody.config_path = configPath;
+        }
+
         const response = await fetch(`${API_URL}/query`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                project,
-                query,
-                k: 5,
-                generate_answer: generateAnswer,
-                output_format: outputFormat,
-            }),
+            body: JSON.stringify(requestBody),
         });
 
         const data = await response.json();

@@ -47,22 +47,27 @@ The Web UI provides a user-friendly interface for:
 #### 2. Ingest Documents
 
 1. Select your project from the dropdown
-2. Click "Choose Files" and select PDF/TXT/MD files
-3. Click "Ingest Documents"
-4. Wait for processing (progress shown in status message)
+2. **(Optional)** Choose a configuration file for embeddings/LLM settings
+   - Default: uses `configs/default.yaml`
+   - Custom: select from available configs (e.g., `lm_studio`, `openai`)
+3. Click "Choose Files" and select PDF/TXT/MD files
+4. Click "Ingest Documents"
+5. Wait for processing (progress shown in status message)
 
 #### 3. Query Documents
 
 1. Select your project
-2. Enter your query (e.g., "What are the key findings?")
-3. Choose an output format (optional):
+2. **(Optional)** Choose a configuration to override project defaults
+   - Useful for testing different LLMs or settings
+3. Enter your query (e.g., "What are the key findings?")
+4. Choose an output format (optional):
    - Excel (.xlsx) - Spreadsheet format
    - Markdown (.md) - Document format
    - JSON (.json) - Structured data
    - PowerPoint (.pptx) - Presentation
    - PDF (.pdf) - Report format
-4. Toggle "Generate LLM Answer" if needed
-5. Click "Query"
+5. Toggle "Generate LLM Answer" if needed
+6. Click "Query"
 
 #### 4. View Results
 
@@ -89,7 +94,34 @@ Currently no authentication required (development mode).
 
 ### Endpoints
 
-#### 1. Health Check
+#### 1. List Available Configs
+
+**GET** `/configs`
+
+List all configuration files in the `configs/` directory.
+
+**Response:**
+```json
+{
+  "configs": [
+    {
+      "name": "default",
+      "path": "configs/default.yaml",
+      "filename": "default.yaml"
+    },
+    {
+      "name": "lm_studio",
+      "path": "configs/lm_studio.yaml",
+      "filename": "lm_studio.yaml"
+    }
+  ],
+  "count": 2
+}
+```
+
+---
+
+#### 2. Health Check
 
 **GET** `/health`
 
@@ -105,7 +137,7 @@ Check API server status.
 
 ---
 
-#### 2. List Projects
+#### 3. List Projects
 
 **GET** `/projects`
 
@@ -121,7 +153,7 @@ List all active projects.
 
 ---
 
-#### 3. Get Project Statistics
+#### 4. Get Project Statistics
 
 **GET** `/projects/{project}/stats`
 
@@ -145,7 +177,7 @@ Get statistics for a specific project.
 
 ---
 
-#### 4. Ingest Documents
+#### 5. Ingest Documents
 
 **POST** `/ingest`
 
@@ -156,6 +188,7 @@ Ingest documents from a file path.
 {
   "project": "my_project",
   "source_path": "/path/to/documents/*.pdf",
+  "config_path": "configs/lm_studio.yaml",
   "metadata": {
     "department": "Finance",
     "year": 2024
@@ -179,9 +212,9 @@ Ingest documents from a file path.
 
 ---
 
-#### 5. Upload and Ingest
+#### 6. Upload and Ingest
 
-**POST** `/ingest/upload?project={project_name}`
+**POST** `/ingest/upload?project={project_name}&config_path={config_path}`
 
 Upload and ingest files directly.
 
@@ -192,7 +225,13 @@ Upload and ingest files directly.
 
 **cURL Example:**
 ```bash
+# Without config (uses default)
 curl -X POST "http://localhost:8000/ingest/upload?project=my_project" \
+  -F "files=@document1.pdf" \
+  -F "files=@document2.pdf"
+
+# With config
+curl -X POST "http://localhost:8000/ingest/upload?project=my_project&config_path=configs/lm_studio.yaml" \
   -F "files=@document1.pdf" \
   -F "files=@document2.pdf"
 ```
@@ -212,7 +251,7 @@ curl -X POST "http://localhost:8000/ingest/upload?project=my_project" \
 
 ---
 
-#### 6. Query Documents
+#### 7. Query Documents
 
 **POST** `/query`
 
@@ -226,6 +265,7 @@ Query documents and optionally generate formatted output.
   "k": 5,
   "generate_answer": true,
   "output_format": "excel",
+  "config_path": "configs/lm_studio.yaml",
   "filters": {
     "department": "Finance"
   }
@@ -238,6 +278,7 @@ Query documents and optionally generate formatted output.
 - `k` (optional): Number of results to retrieve (default: 5)
 - `generate_answer` (optional): Generate LLM answer (default: true)
 - `output_format` (optional): Output format (`excel`, `markdown`, `json`, `powerpoint`, `pdf`)
+- `config_path` (optional): Path to config YAML file (overrides project default)
 - `filters` (optional): Metadata filters
 
 **Response:**
@@ -261,7 +302,7 @@ Query documents and optionally generate formatted output.
 
 ---
 
-#### 7. Download Output File
+#### 8. Download Output File
 
 **GET** `/output/{project}/{filename}`
 
@@ -276,7 +317,7 @@ GET http://localhost:8000/output/my_project/my_project_query_1234567890.xlsx
 
 ---
 
-#### 8. Delete Project
+#### 9. Delete Project
 
 **DELETE** `/projects/{project}`
 
@@ -387,7 +428,57 @@ console.log('File:', result.output_path);
 
 ---
 
-## Configuration
+## Changing Embeddings/LLM Settings
+
+Before starting the server, you can configure which embedding and LLM models to use:
+
+### Option 1: Edit Default Config
+
+```bash
+# Edit configs/default.yaml before starting server
+notepad configs/default.yaml  # Windows
+nano configs/default.yaml     # Linux/Mac
+
+# Then start server
+python run_server.py
+```
+
+### Option 2: Create Custom Configs
+
+```bash
+# Copy and edit for different setups
+cp configs/default.yaml configs/lm_studio.yaml
+notepad configs/lm_studio.yaml
+
+# Select in Web UI dropdown when ingesting/querying
+```
+
+### Example: LM Studio API Config
+
+Edit `configs/lm_studio.yaml`:
+
+```yaml
+models:
+  embedder:
+    provider: api
+    api:
+      base_url: http://localhost:1234/v1
+      model: nomic-embed-text-v1.5
+      api_key: sk-dummy
+
+  llm:
+    provider: api
+    api:
+      base_url: http://localhost:1234/v1
+      model: qwen2.5-3b-instruct
+      api_key: sk-dummy
+```
+
+See [Configuration Guide](CONFIG_GUIDE.md) for detailed config options.
+
+---
+
+## Server Configuration
 
 ### Change Server Port
 
@@ -508,6 +599,14 @@ Features:
 - Test endpoints directly in browser
 - View request/response schemas
 - Copy cURL commands
+
+---
+
+## See Also
+
+- **[Configuration Guide](CONFIG_GUIDE.md)** - Detailed config examples for LM Studio, OpenAI, Ollama, etc.
+- **[API Configuration](API_CONFIGURATION.md)** - API provider setup details
+- **[Features Status](FEATURES_STATUS.md)** - Current feature status
 
 ---
 

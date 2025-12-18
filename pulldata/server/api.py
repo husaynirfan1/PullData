@@ -30,6 +30,7 @@ class IngestRequest(BaseModel):
     project: str = Field(..., description="Project name")
     source_path: str = Field(..., description="Path to document(s)")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Document metadata")
+    config_path: Optional[str] = Field(None, description="Path to config YAML file (relative to configs/)")
 
 
 class QueryRequest(BaseModel):
@@ -40,6 +41,7 @@ class QueryRequest(BaseModel):
     generate_answer: bool = Field(True, description="Whether to generate LLM answer")
     output_format: Optional[str] = Field(None, description="Output format (excel, markdown, json, powerpoint, pdf)")
     filters: Optional[Dict[str, Any]] = Field(None, description="Metadata filters")
+    config_path: Optional[str] = Field(None, description="Path to config YAML file (relative to configs/)")
 
 
 class QueryResponse(BaseModel):
@@ -150,6 +152,31 @@ async def health_check():
     }
 
 
+@app.get("/configs")
+async def list_configs():
+    """List available configuration files."""
+    try:
+        config_dir = Path("./configs")
+        if not config_dir.exists():
+            return {"configs": [], "count": 0}
+
+        # Find all YAML config files
+        config_files = []
+        for config_file in config_dir.glob("*.yaml"):
+            config_files.append({
+                "name": config_file.stem,
+                "path": str(config_file),
+                "filename": config_file.name,
+            })
+
+        return {
+            "configs": sorted(config_files, key=lambda x: x["name"]),
+            "count": len(config_files)
+        }
+    except Exception as e:
+        return {"configs": [], "count": 0, "error": str(e)}
+
+
 @app.get("/projects")
 async def list_projects():
     """List active projects."""
@@ -178,7 +205,8 @@ async def get_project_stats(project: str):
 async def ingest_documents(request: IngestRequest):
     """Ingest documents into a project."""
     try:
-        pd = get_or_create_project(request.project)
+        # Use config if provided
+        pd = get_or_create_project(request.project, config_path=request.config_path)
 
         # Ingest documents
         stats = pd.ingest(
@@ -200,11 +228,12 @@ async def ingest_documents(request: IngestRequest):
 async def upload_and_ingest(
     project: str,
     files: List[UploadFile] = File(...),
+    config_path: Optional[str] = None,
     background_tasks: BackgroundTasks = None,
 ):
     """Upload and ingest files."""
     try:
-        pd = get_or_create_project(project)
+        pd = get_or_create_project(project, config_path=config_path)
 
         # Create temp directory for uploads
         temp_dir = Path(tempfile.mkdtemp())
@@ -254,11 +283,16 @@ async def upload_and_ingest(
 async def query_documents(request: QueryRequest):
     """Query documents in a project."""
     try:
+        # If project doesn't exist, create with config if provided
         if request.project not in active_projects:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Project '{request.project}' not found. Please ingest documents first."
-            )
+            if request.config_path:
+                # Create project with config for query-only scenarios
+                pd = get_or_create_project(request.project, config_path=request.config_path)
+            else:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Project '{request.project}' not found. Please ingest documents first."
+                )
 
         pd = active_projects[request.project]
 

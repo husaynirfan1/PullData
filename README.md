@@ -416,9 +416,19 @@ MIT License - see [LICENSE](LICENSE) for details.
 }
 ```
 
+## Documentation
+
+📚 **[Complete Documentation Index](docs/README.md)** - All guides in one place
+
+Quick links:
+- [Quick Start](QUICKSTART.md) - Get started in 5 minutes
+- [Config Quick Start](docs/CONFIG_QUICKSTART.md) - Change settings (LM Studio, OpenAI, etc.)
+- [Web UI Guide](docs/WEB_UI_GUIDE.md) - Using the Web interface
+- [Configuration Guide](docs/CONFIG_GUIDE.md) - Complete config reference
+- [Features Status](docs/FEATURES_STATUS.md) - What's implemented
+
 ## Support
 
-- Documentation: [https://pulldata.readthedocs.io](https://pulldata.readthedocs.io)
 - Issues: [https://github.com/pulldata/pulldata/issues](https://github.com/pulldata/pulldata/issues)
 - Discussions: [https://github.com/pulldata/pulldata/discussions](https://github.com/pulldata/pulldata/discussions)
 
