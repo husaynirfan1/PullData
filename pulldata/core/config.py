@@ -153,6 +153,26 @@ class ModelConfig(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
 
 
+class VLMConfig(BaseModel):
+    """Vision Language Model configuration for OCR."""
+
+    enabled: bool = Field(default=False, description="Enable VLM-based OCR for PDFs")
+    provider: Literal["api"] = "api"  # Only API provider for now
+    base_url: str = "http://localhost:1234/v1"
+    api_key: str = "sk-dummy"
+    model: str = "smolvlm-500m-instruct"
+    timeout: int = Field(default=120, gt=0, description="Request timeout in seconds")
+    max_retries: int = Field(default=3, ge=0)
+    
+    # OCR-specific settings
+    use_for_scanned_pdfs: bool = Field(default=True, description="Use VLM for PDFs with no text layer")
+    min_text_threshold: int = Field(default=50, description="Min characters to consider PDF has text layer")
+    ocr_prompt: str = Field(
+        default="Extract all text from this image. Return only the extracted text, nothing else.",
+        description="Prompt template for OCR"
+    )
+
+
 # ============================================================
 # Document Processing Configuration
 # ============================================================
@@ -164,6 +184,7 @@ class PDFParsingConfig(BaseModel):
     backend: Literal["pymupdf", "pdfplumber"] = "pymupdf"
     extract_images: bool = False
     extract_tables: bool = True
+    ocr: VLMConfig = Field(default_factory=VLMConfig)  # NEW: VLM OCR config
     table_settings: dict[str, Any] = Field(
         default_factory=lambda: {
             "min_words_vertical": 3,

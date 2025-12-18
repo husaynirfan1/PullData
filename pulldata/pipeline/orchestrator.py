@@ -16,7 +16,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from tqdm import tqdm
 
 from pulldata.core.config import Config, load_config
-from pulldata.core.datatypes import Document, QueryResult
+from pulldata.core.datatypes import Document, QueryResult, DocumentType
 from pulldata.core.exceptions import (
     ConfigError,
     EmbeddingError,
@@ -194,12 +194,34 @@ class PullData:
         """Create vector store from configuration."""
         logger.debug("Creating vector store...")
 
+        # Get configured dimension
+        configured_dimension = self.config.models.embedder.dimension
+
         # Check if existing index exists
         index_path = Path(f"./data/{self.project}/faiss_index")
         if index_path.exists() and (index_path / "index.faiss").exists():
             logger.info(f"Loading existing FAISS index from {index_path}")
             try:
-                return VectorStore.load(index_path)
+                loaded_store = VectorStore.load(index_path)
+                
+                # Check if loaded index dimension matches configured dimension
+                if loaded_store.dimension != configured_dimension:
+                    logger.warning(
+                        f"Existing index dimension ({loaded_store.dimension}) does not match "
+                        f"configured dimension ({configured_dimension}). Recreating index..."
+                    )
+                    # Delete old index files to avoid confusion
+                    import shutil
+                    shutil.rmtree(index_path)
+                    logger.info(f"Deleted old index at {index_path}")
+                    
+                    # Also delete the metadata database to keep in sync
+                    metadata_db_path = Path(f"./data/{self.project}/metadata.db")
+                    if metadata_db_path.exists():
+                        metadata_db_path.unlink()
+                        logger.info(f"Deleted old metadata database at {metadata_db_path}")
+                else:
+                    return loaded_store
             except Exception as e:
                 logger.warning(f"Failed to load existing index: {e}. Creating new index.")
 
@@ -336,6 +358,27 @@ class PullData:
         logger.info(f"Ingestion complete. Processed {stats['processed_files']}/{stats['total_files']} files")
         return stats
 
+    def _create_parser(self, doc_type: DocumentType):
+        """
+        Create appropriate parser for document type.
+
+        Args:
+            doc_type: Document type
+
+        Returns:
+            Parser instance
+        """
+        if doc_type == DocumentType.PDF:
+            parser = PDFParser(ocr_config=self.config.parsing.pdf.ocr)
+        elif doc_type == DocumentType.DOCX:
+            parser = DOCXParser()
+        elif doc_type == DocumentType.TXT:
+            parser = TXTParser()
+        else:
+            raise ValueError(f"Unsupported document type: {doc_type}")
+
+        return parser
+
     def _ingest_document(
         self,
         file_path: Path,
@@ -354,15 +397,23 @@ class PullData:
         logger.debug(f"Parsing {file_path}")
         
         if file_path.suffix.lower() == ".pdf":
-            parser = PDFParser()
+            parser = self._create_parser(DocumentType.PDF)
             document, page_texts = parser.parse(file_path)
+            
+            # Assign document ID if not already set
+            # Use UUID to guarantee uniqueness and avoid DB collisions
+            if document.id is None:
+                import uuid
+                document.id = f"doc_{file_path.stem}_{uuid.uuid4().hex[:8]}"
+                
         elif file_path.suffix.lower() in [".txt", ".md"]:
             # Simple text file handling
             import hashlib
             from pulldata.core.datatypes import Document
             
             text_content = file_path.read_text(encoding='utf-8')
-            document_id = f"doc_{file_path.stem}_{int(time.time())}"
+            timestamp_ms = int(time.time() * 1000)
+            document_id = f"doc_{file_path.stem}_{timestamp_ms}"
             
             # Calculate content hash
             content_hash = hashlib.sha256(text_content.encode()).hexdigest()
@@ -399,7 +450,10 @@ class PullData:
         
         # Chunk all page texts
         chunks = []
-        for page_num, page_text in page_texts.items():
+        global_chunk_index = 0
+        
+        # Sort by page number to ensure deterministic order
+        for page_num, page_text in sorted(page_texts.items()):
             page_chunks = chunker.chunk_text(
                 text=page_text,
                 document_id=document.id,
@@ -409,6 +463,12 @@ class PullData:
             for chunk in page_chunks:
                 chunk.start_page = page_num
                 chunk.end_page = page_num
+                
+                # Check for chunk index collision and fix it
+                # The chunker resets index for each call, so we enforce a global index
+                chunk.chunk_index = global_chunk_index
+                global_chunk_index += 1
+                
             chunks.extend(page_chunks)
 
         

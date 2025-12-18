@@ -193,12 +193,38 @@ async function loadConfigs() {
 }
 
 function updateConfigsUI() {
+    // Build config options
     const configOptions = configs.map(config =>
         `<option value="${config.path}">${config.name}</option>`
     ).join('');
 
-    elements.ingestConfig.innerHTML = `<option value="">Default (configs/default.yaml)</option>${configOptions}`;
-    elements.queryConfig.innerHTML = `<option value="">Default Config</option>${configOptions}`;
+    // Update ingest config dropdown
+    elements.ingestConfig.innerHTML = `
+        <option value="">Default (configs/default.yaml)</option>
+        ${configOptions}
+    `;
+
+    // Update query config dropdown
+    elements.queryConfig.innerHTML = `
+        <option value="">Use project default</option>
+        ${configOptions}
+    `;
+
+    // Add event listener for OCR config detection
+    const ingestConfigSelect = document.getElementById('ingestConfig');
+    const ocrInfoBox = document.getElementById('ocrInfoBox');
+
+    if (ingestConfigSelect && ocrInfoBox) {
+        ingestConfigSelect.addEventListener('change', function () {
+            const selectedConfig = this.value.toLowerCase();
+            // Show OCR info if OCR config is selected
+            if (selectedConfig.includes('ocr') || selectedConfig.includes('lm_studio_with_ocr')) {
+                ocrInfoBox.style.display = 'block';
+            } else {
+                ocrInfoBox.style.display = 'none';
+            }
+        });
+    }
 }
 
 function selectProject(projectName) {

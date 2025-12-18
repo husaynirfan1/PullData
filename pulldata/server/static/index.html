@@ -198,12 +198,34 @@
                 <div class="form-group">
                     <label>File Upload (PDF, MD, TXT)</label>
                     <input type="file" id="fileUpload" multiple accept=".pdf,.txt,.md" class="input-field">
+                    <small style="color: #999; display: block; margin-top: 4px;">
+                        📄 Tip: For scanned/image-based PDFs, select the OCR config below
+                    </small>
                 </div>
                 <div class="form-group">
                     <label>Configuration (Optional)</label>
                     <select id="ingestConfig" class="input-field">
                         <option value="">Default</option>
                     </select>
+                    <small style="color: #999; display: block; margin-top: 8px;">
+                        💡 <strong>For scanned PDFs:</strong> Select "lm_studio_with_ocr" to enable OCR with vision
+                        models
+                    </small>
+                </div>
+
+                <!-- OCR Info Box -->
+                <div id="ocrInfoBox"
+                    style="display: none; background: #e8f4f8; border: 1px solid #b3d9e6; border-radius: 8px; padding: 12px; margin: 16px 0;">
+                    <div style="display: flex; align-items: start; gap: 8px;">
+                        <span style="font-size: 20px;">🔍</span>
+                        <div style="flex: 1; font-size: 0.9rem;">
+                            <strong>OCR Mode Active</strong>
+                            <p style="margin: 4px 0 0 0; color: #666;">
+                                Scanned PDFs will be processed using VLM (SmolVLM). Make sure LM Studio is running with
+                                a vision model.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="ingestStatus" class="status-message" style="display:none"></div>

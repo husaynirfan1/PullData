@@ -1,0 +1,85 @@
+# PullData Configuration with VLM OCR Support (LM Studio)
+# This config uses LM Studio for embeddings, LLM, and VLM OCR
+
+models:
+  # Embeddings Configuration
+  embedder:
+    provider: api
+    api:
+      base_url: http://localhost:1234/v1
+      api_key: sk-dummy
+      model: text-embedding-qwen3-embedding-0.6b
+      timeout: 60
+      max_retries: 3
+      batch_size: 100
+    dimension: 1024
+
+  # Language Model Configuration  
+  llm:
+    provider: api
+    api:
+      base_url: http://localhost:1234/v1
+      api_key: sk-dummy
+      model: qwen3-1.7b
+      timeout: 60
+      max_retries: 3
+    generation:
+      max_tokens: 2048
+      temperature: 0.7
+      top_p: 0.9
+
+# Document Parsing Configuration
+parsing:
+  pdf:
+    backend: pymupdf
+    extract_images: false
+    extract_tables: true
+    
+    # VLM OCR Configuration (NEW!)
+    ocr:
+      enabled: true  # Enable VLM-based OCR
+      provider: api
+      base_url: http://localhost:1234/v1
+      api_key: sk-dummy
+      model: smolvlm-500m-instruct  # SmolVLM for OCR
+      timeout: 120  # VLM is slower than LLM
+      max_retries: 3
+      
+      # OCR-specific settings
+      use_for_scanned_pdfs: true  # Auto-detect and OCR scanned PDFs
+      min_text_threshold: 50  # Min chars to consider PDF has text layer
+      ocr_prompt: "Extract all text from this image. Return only the extracted text, nothing else."
+
+  chunking:
+    strategy: semantic
+    chunk_size: 512
+    chunk_overlap: 50
+    min_chunk_size: 100
+    respect_sentence_boundary: true
+
+# Storage Configuration
+storage:
+  backend: local
+  local:
+    sqlite_path: ./data/{project}/metadata.db
+    faiss_index_path: ./data/{project}/faiss_index
+    create_if_missing: true
+
+# Retrieval Configuration  
+retrieval:
+  vector_search:
+    index_type: flat
+    metric: cosine
+    top_k: 5
+
+# Performance Configuration
+performance:
+  batch_size: 32
+  num_workers: 4
+  show_progress: true
+
+# Logging Configuration
+logging:
+  level: INFO
+  log_to_file: true
+  log_file: ./logs/pulldata.log

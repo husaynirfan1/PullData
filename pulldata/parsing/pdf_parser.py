@@ -3,11 +3,12 @@ PDF parsing using PyMuPDF.
 
 Extracts text content from PDF files with page-level granularity.
 Handles text extraction, metadata, and page information.
+Supports VLM-based OCR for scanned PDFs.
 """
 
 import hashlib
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 import fitz  # PyMuPDF
 
@@ -24,11 +25,33 @@ class PDFParser:
     PDF parser using PyMuPDF (fitz).
 
     Extracts text content, metadata, and page information from PDF files.
+    Supports VLM-based OCR for scanned PDFs with no text layer.
     """
 
-    def __init__(self):
-        """Initialize PDF parser."""
+    def __init__(self, ocr_config: Optional[Any] = None):
+        """
+        Initialize PDF parser.
+        
+        Args:
+            ocr_config: Optional VLMConfig for OCR support
+        """
         self.supported_extensions = {".pdf"}
+        self.ocr_config = ocr_config
+        self._vlm_client = None
+        
+        # Initialize VLM client if OCR is enabled
+        if ocr_config and ocr_config.enabled:
+            try:
+                from pulldata.vlm import VLMClient
+                self._vlm_client = VLMClient(
+                    model_name=ocr_config.model,
+                    base_url=ocr_config.base_url,
+                    api_key=ocr_config.api_key,
+                    timeout=ocr_config.timeout,
+                    max_retries=ocr_config.max_retries,
+                )
+            except ImportError:
+                pass  # VLM module not available
 
     def is_supported(self, file_path: str | Path) -> bool:
         """
@@ -92,6 +115,11 @@ class PDFParser:
             for page_num in range(len(pdf_doc)):
                 page = pdf_doc[page_num]
                 text = page.get_text()
+                
+                # Check if OCR is needed (text layer is missing or minimal)
+                if self._should_use_ocr(text):
+                    text = self._ocr_page(page, page_num + 1)
+                
                 page_texts[page_num + 1] = text  # 1-indexed pages
                 full_text.append(text)
 
@@ -139,6 +167,57 @@ class PDFParser:
                 f"Unexpected error parsing PDF: {e}",
                 details={"path": str(file_path), "error": str(e), "type": type(e).__name__},
             )
+
+    def _should_use_ocr(self, text: str) -> bool:
+        """
+        Check if OCR should be used for this page.
+        
+        Args:
+            text: Extracted text from page
+            
+        Returns:
+            True if OCR should be used, False otherwise
+        """
+        if not self._vlm_client or not self.ocr_config:
+            return False
+            
+        if not self.ocr_config.use_for_scanned_pdfs:
+            return False
+        
+        # Check if text is below threshold
+        min_threshold = self.ocr_config.min_text_threshold
+        return len(text.strip()) < min_threshold
+
+    def _ocr_page(self, page: fitz.Page, page_number: int) -> str:
+        """
+        Perform OCR on a PDF page using VLM.
+        
+        Args:
+            page: PyMuPDF page object
+            page_number: Page number (1-indexed)
+            
+        Returns:
+            OCR-extracted text
+        """
+        try:
+            # Render page as image
+            # Use higher resolution for better OCR
+            mat = fitz.Matrix(2.0, 2.0)  # 2x scaling
+            pix = page.get_pixmap(matrix=mat)
+            
+            # Convert to PIL Image
+            from PIL import Image
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            
+            # Use VLM for OCR
+            text = self._vlm_client.ocr_pdf_page(img, page_number)
+            
+            return text
+            
+        except Exception as e:
+            # If OCR fails, return empty string
+            print(f"Warning: OCR failed for page {page_number}: {e}")
+            return ""
 
     def extract_page_text(self, file_path: str | Path, page_number: int) -> str:
         """
