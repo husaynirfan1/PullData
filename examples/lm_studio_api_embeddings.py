@@ -62,7 +62,7 @@ def main():
     # Ingest
     print("\n[3/4] Ingesting document...")
     try:
-        stats = pd.ingest(str(sample_file))
+        stats = pd.ingest("D:/PullData/testdocs/test.txt")
         print(f"      Processed: {stats.get('processed_files', 0)} files")
         print(f"      Chunks: {stats.get('new_chunks', 0)}")
     except Exception as e:
@@ -79,7 +79,7 @@ def main():
     print(f"      Debug: Metadata chunks = {pd._metadata_store.get_stats()['chunk_count']}")
     
     try:
-        result = pd.query("What are the types of machine learning?", generate_answer=True)
+        result = pd.query("How to troubleshoot hydraulic system?", generate_answer=True)
         answer = result.llm_response.text if result.llm_response else "No answer generated"
         print(f"      Answer: {answer}")
         print(f"      Sources: {len(result.retrieved_chunks)}")

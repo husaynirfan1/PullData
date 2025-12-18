@@ -1,0 +1,46 @@
+# B737-800 HYDRAULIC POWER SYSTEM (SIMULATION DATA)
+
+## 1.0 General System Description
+The aircraft uses three independent hydraulic systems: System A, System B, and the Standby System. The nominal operating pressure for all main systems is 3000 psig.
+
+### 1.1 System A Components
+System A is powered by:
+1.  **Engine-Driven Pump (EDP):** Located on the No. 1 Engine accessory drive.
+2.  **Electric Motor-Driven Pump (EMDP):** Powered by the AC Transfer Bus 2.
+
+In the simulator, the fluid dynamics are calculated by the `hyd_model_a.cpp` module. The reservoir quantity is represented by the variable `sim_hyd_sys_a_qty`. If this variable drops below 20%, the `LOW QTY` light on the overhead panel will illuminate.
+
+### 1.2 System B Components
+System B is powered by one EDP on the No. 2 Engine and one EMDP powered by AC Transfer Bus 1. Note that the cooling lines for System B run through the fuel tank, meaning hydraulic overheating can occur if fuel quantity is low.
+
+## 2.0 SIMULATOR FAULT LOGIC (IOS)
+
+The Instructor Operating Station (IOS) uses specific malfunction codes to trigger failures. The model uses a decay rate logic to simulate leaks.
+
+| Malfunction ID | Description | Simulation Effect | Trigger Variable |
+| :--- | :--- | :--- | :--- |
+| **MALF_HYD_001** | Sys A EDP Failure | Pressure drops to 0 PSI in 3.5 seconds. | `ios_malf_hyd_edp_a_fail` |
+| **MALF_HYD_005** | Sys B Slow Leak | Quantity drops 2% per minute. | `ios_malf_hyd_leak_rate` |
+| **MALF_ELEC_PUMP** | EMDP Overheat | Pump case temp exceeds 115°C, tripping thermal breaker. | `ios_malf_emdp_ovht` |
+
+> **NOTE:** If `MALF_HYD_005` is active, the Standby System will NOT automatically activate unless the force flight control switch is toggled.
+
+## 3.0 QTG VALIDATION TOLERANCES (FAA PART 60)
+
+For the simulator to be certified (Level D), the hydraulic control loading (feel system) must meet the following objective test criteria:
+
+### 3.1 Control Loading Static Friction
+* **Elevator:** Breakout force must be within ± 2.0 lbs of aircraft data.
+* **Aileron:** Breakout force must be within ± 1.5 lbs of aircraft data.
+* **Rudder:** Breakout force must be within ± 5.0 lbs of aircraft data.
+
+### 3.2 Dynamic Response
+When a step input is applied to the hydraulic actuator model (`actuator_step_input`), the system response time (Time to 90% steady state) must match the aircraft validation data within **150 milliseconds**.
+
+## 4.0 TROUBLESHOOTING GUIDE
+
+**Symptom:** Hydraulic System A pressure fluctuates during motion visuals.
+**Possible Cause:**
+1.  Check the `HOST` to `IG` (Image Generator) latency. High network traffic can cause UDP packet loss.
+2.  Verify the `A01_HYD_PUMP` curve in the `data_tables.cfg` file.
+3.  Ensure the "Sound Server" is not desynchronized, as sound cues (pump whine) are driven by the `hyd_pressure_a` variable.

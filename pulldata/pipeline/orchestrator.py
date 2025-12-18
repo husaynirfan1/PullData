@@ -34,6 +34,13 @@ from pulldata.storage.hybrid_search import HybridSearchEngine
 from pulldata.storage.metadata_store import MetadataStore
 from pulldata.storage.vector_store import VectorStore
 from pulldata.synthesis import OutputData, OutputFormatter
+from pulldata.synthesis.formatters import (
+    ExcelFormatter,
+    MarkdownFormatter,
+    JSONFormatter,
+    PowerPointFormatter,
+    PDFFormatter,
+)
 
 # Optional imports
 try:
@@ -510,11 +517,27 @@ class PullData:
             ) if rag_response.answer else None,
         )
         
-        # If output format specified, convert to OutputData
+        # If output format specified, format and save to file
         if output_format:
             output_data = self._convert_to_output_data(result)
-            return output_data
-        
+            formatter = self._get_formatter(output_format)
+
+            # Create output directory if it doesn't exist
+            output_dir = Path("./output")
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            # Generate filename with timestamp
+            timestamp = int(time.time())
+            output_path = output_dir / f"{self.project}_query_{timestamp}.{formatter.file_extension.lstrip('.')}"
+
+            # Save formatted output
+            saved_path = self.format_and_save(output_data, formatter, output_path)
+            logger.info(f"Query results saved to {saved_path}")
+
+            # Update result with output path
+            result.output_path = str(saved_path)
+            return result
+
         return result
 
     def _convert_to_output_data(self, result: QueryResult) -> OutputData:
@@ -545,6 +568,34 @@ class PullData:
             sources=sources,
             metadata={},
         )
+
+    def _get_formatter(self, format_type: str) -> OutputFormatter:
+        """Get formatter instance for the specified format.
+
+        Args:
+            format_type: Format type ('excel', 'markdown', 'json', 'powerpoint', 'pdf')
+
+        Returns:
+            OutputFormatter instance
+
+        Raises:
+            ValueError: If format_type is not supported
+        """
+        formatters = {
+            "excel": ExcelFormatter,
+            "markdown": MarkdownFormatter,
+            "json": JSONFormatter,
+            "powerpoint": PowerPointFormatter,
+            "pdf": PDFFormatter,
+        }
+
+        if format_type not in formatters:
+            raise ValueError(
+                f"Unsupported format: {format_type}. "
+                f"Supported formats: {', '.join(formatters.keys())}"
+            )
+
+        return formatters[format_type]()
 
     def format_and_save(
         self,
