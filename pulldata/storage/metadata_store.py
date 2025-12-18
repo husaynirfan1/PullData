@@ -500,3 +500,26 @@ class MetadataStore:
             "document_count": doc_count,
             "chunk_count": chunk_count,
         }
+
+    def list_documents(self, limit: Optional[int] = None, offset: int = 0) -> list[Document]:
+        """
+        List all documents in the store.
+
+        Args:
+            limit: Maximum number of documents to return (None for all)
+            offset: Number of documents to skip
+
+        Returns:
+            List of Document objects
+        """
+        cursor = self.conn.cursor()
+
+        query = "SELECT * FROM documents ORDER BY ingested_at DESC"
+        if limit is not None:
+            query += f" LIMIT {limit} OFFSET {offset}"
+
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        cursor.close()
+
+        return [self._row_to_document(row) for row in rows]

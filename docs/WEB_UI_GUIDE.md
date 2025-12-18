@@ -34,6 +34,7 @@ The Web UI provides a modern, elegant interface with:
 - ✅ Creating and managing projects with real-time statistics
 - ⚙️ **Configuration selection** for embeddings and LLM settings
 - ✅ Uploading and ingesting documents (PDF, TXT, MD)
+- ✅ **Viewing ingested documents** with metadata (NEW!)
 - ✅ Querying documents with LLM
 - ✅ Generating deliverable outputs (Excel, PDF, PowerPoint, Markdown, JSON)
 - ✅ Real-time results display with source citations
@@ -378,7 +379,38 @@ Query documents and optionally generate formatted output.
 
 ---
 
-#### 8. Download Output File
+#### 8. List Project Documents
+
+**GET** `/projects/{project}/documents`
+
+List all documents ingested into a project.
+
+**Query Parameters:**
+- `limit` (optional): Maximum number of documents to return
+- `offset` (optional): Number of documents to skip (default: 0)
+
+**Response:**
+```json
+{
+  "project": "my_project",
+  "documents": [
+    {
+      "id": "doc_financial_report_2024",
+      "source": "/path/to/financial_report_2024.pdf",
+      "title": "Annual Financial Report 2024",
+      "file_type": "pdf",
+      "ingested_at": "2024-12-18T12:30:45",
+      "page_count": 45,
+      "metadata": {}
+    }
+  ],
+  "count": 1
+}
+```
+
+---
+
+#### 9. Download Output File
 
 **GET** `/output/{project}/{filename}`
 
@@ -393,7 +425,7 @@ GET http://localhost:8000/output/my_project/my_project_query_1234567890.xlsx
 
 ---
 
-#### 9. Delete Project
+#### 10. Delete Project
 
 **DELETE** `/projects/{project}`
 

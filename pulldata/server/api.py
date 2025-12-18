@@ -265,6 +265,51 @@ async def get_project_stats(project: str):
     }
 
 
+@app.get("/projects/{project}/documents")
+async def list_project_documents(
+    project: str,
+    limit: Optional[int] = None,
+    offset: int = 0
+):
+    """List all documents in a project.
+    
+    Args:
+        project: Project name
+        limit: Maximum number of documents to return (default: all)
+        offset: Number of documents to skip (default: 0)
+    
+    Returns:
+        List of documents with their metadata
+    """
+    if project not in active_projects:
+        raise HTTPException(status_code=404, detail=f"Project '{project}' not found")
+    
+    pd = active_projects[project]
+    
+    try:
+        # Get documents from metadata store
+        documents = pd._metadata_store.list_documents(limit=limit, offset=offset)
+        
+        return {
+            "project": project,
+            "documents": [
+                {
+                    "id": doc.id,
+                    "source": doc.source_path,
+                    "title": doc.filename,
+                    "file_type": doc.doc_type.value if doc.doc_type else "unknown",
+                    "ingested_at": doc.ingested_at.isoformat() if doc.ingested_at else None,
+                    "page_count": doc.num_pages,
+                    "metadata": doc.metadata
+                }
+                for doc in documents
+            ],
+            "count": len(documents)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error listing documents: {str(e)}")
+
+
 @app.post("/ingest", response_model=IngestResponse)
 async def ingest_documents(request: IngestRequest):
     """Ingest documents into a project."""

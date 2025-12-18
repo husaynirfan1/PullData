@@ -4,169 +4,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PullData Web UI</title>
+    <title>PullData</title>
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Google+Sans:wght@400;500;700&display=swap"
         rel="stylesheet">
+
+    <!-- Icons (Material Symbols) -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <div class="header-content">
-                <h1>🔍 PullData</h1>
-                <p class="subtitle">RAG System with Deliverable Outputs</p>
+    <div class="app-container">
+        <!-- Sidebar: Projects & Sources -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <span class="material-symbols-outlined">auto_awesome</span>
+                    PullData
+                </div>
+                <button id="themeToggle" class="theme-toggle">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+                <input type="checkbox" id="checkbox" style="display:none"> <!-- Hidden for app.js compatibility -->
             </div>
-            <div class="theme-switch-wrapper">
-                <label class="theme-switch" for="checkbox">
-                    <input type="checkbox" id="checkbox" />
-                    <div class="slider round">
-                        <span class="icon-sun">☀️</span>
-                        <span class="icon-moon">🌙</span>
-                    </div>
-                </label>
-            </div>
-        </header>
 
-        <div class="main-content">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <div class="section">
+            <div class="sidebar-content">
+                <!-- Add Source Button -->
+                <div class="sidebar-section">
+                    <button id="openIngestModalBtn" class="add-new-btn">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        <span>Add Source</span>
+                    </button>
+                </div>
+
+                <!-- Projects List -->
+                <div class="sidebar-section">
                     <h3>Projects</h3>
-                    <div id="projectsList" class="projects-list">
-                        <p class="placeholder">No projects yet</p>
+                    <div id="projectsList">
+                        <!-- Populated by JS -->
                     </div>
-                    <button id="refreshProjectsBtn" class="btn btn-secondary">Refresh</button>
                 </div>
 
-                <div class="section">
-                    <h3>New Project</h3>
-                    <input type="text" id="projectName" placeholder="Project name" class="input">
-                    <button id="createProjectBtn" class="btn btn-primary">Create</button>
+                <!-- Active Project Stats / Sources Summary -->
+                <div class="sidebar-section" id="activeProjectStats" style="display:none; margin-top: 20px;">
+                    <h3>Current Project</h3>
+                    <div id="statsDisplay"
+                        style="font-size: 0.85rem; color: var(--md-sys-color-secondary); padding: 0 12px; margin-bottom:8px;">
+                    </div>
+                    <div id="sidebarSourcesList" style="display:flex; flex-direction:column; gap:8px;">
+                        <!-- Sources injected here -->
+                    </div>
                 </div>
 
-                <div class="section">
-                    <h3>Status</h3>
-                    <div id="statusInfo" class="status-info">
-                        <p><span class="status-indicator"></span> Connected</p>
-                        <p id="statsDisplay"></p>
+                <!-- Project Helper (Hidden forms to satisfy JS requirements if needed, but we try to reuse IDs) -->
+                <!-- We will put the creation inputs in a hidden manner or clean UI -->
+                <div class="sidebar-section"
+                    style="margin-top:auto; padding-top:20px; border-top: 1px solid var(--md-sys-color-outline-variant)">
+                    <h3 style="cursor:pointer"
+                        onclick="document.getElementById('newProjectForm').classList.toggle('hidden')">
+                        <span class="material-symbols-outlined"
+                            style="font-size:1rem; vertical-align:middle">create_new_folder</span>
+                        New Project
+                    </h3>
+                    <div id="newProjectForm" class="hidden">
+                        <input type="text" id="projectName" placeholder="Project Name" class="input-field"
+                            style="margin-bottom:8px;">
+                        <button id="createProjectBtn" class="btn-primary"
+                            style="width:100%; font-size:0.8rem; padding:8px;">Create</button>
+                    </div>
+                    <button id="refreshProjectsBtn" style="display:none">Refresh</button> <!-- Hidden trigger -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content: Chat / Notebook -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="project-title" id="currentProjectTitle">Select a Project</div>
+                <!-- Status icons or user profile could go here -->
+                <div id="queryStatus" class="status-message" style="display:none"></div>
+            </header>
+
+            <!-- Scrollable Area -->
+            <div class="notebook-area" id="notebookArea">
+
+                <!-- Welcome / Empty State -->
+                <div id="emptyState" class="empty-state">
+                    <span class="material-symbols-outlined"
+                        style="font-size: 48px; color: var(--md-sys-color-primary);">library_books</span>
+                    <h2>Welcome to PullData</h2>
+                    <p>Select a project and ask a question to get started.</p>
+                </div>
+
+                <!-- Results Section (Hidden until query) -->
+                <div id="resultsCard" class="result-card" style="display: none;">
+
+                    <div class="answer-block">
+                        <span class="material-symbols-outlined"
+                            style="color: var(--md-sys-color-primary); float:left; margin-right:12px; margin-top:4px;">auto_awesome</span>
+                        <div id="answerText"></div>
+                    </div>
+
+                    <div id="outputFileSection" style="margin-top:24px; display:none">
+                        <a id="outputFileLink" class="download-link" target="_blank"
+                            style="color: var(--md-sys-color-primary); font-weight:500; text-decoration:none; display:flex; align-items:center; gap:8px;">
+                            <span class="material-symbols-outlined">download</span> Download Generated File
+                        </a>
+                    </div>
+
+                    <div class="citations-block">
+                        <h4 style="grid-column: 1/-1; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                            <span class="material-symbols-outlined">format_quote</span>
+                            Sources (<span id="sourcesCount">0</span>)
+                        </h4>
+                        <div id="sourcesList" style="display:contents"></div>
+                    </div>
+                </div>
+
+                <div style="height: 100px;"></div> <!-- Spacer for scroll -->
+            </div>
+
+            <!-- Bottom Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea id="queryText" class="query-input" placeholder="Ask a question about your sources..."
+                        rows="1"></textarea>
+
+                    <div class="input-actions">
+                        <div class="input-toggles">
+                            <!-- Helper selects mapped to JS -->
+                            <select id="queryConfig" class="pill-select" title="Configuration">
+                                <option value="">Default Config</option>
+                            </select>
+
+                            <select id="outputFormat" class="pill-select" title="Output Format">
+                                <option value="">Answer Only</option>
+                                <option value="markdown">Markdown</option>
+                                <option value="pdf">PDF</option>
+                                <option value="styled_pdf">Styled PDF ✨</option>
+                                <option value="excel">Excel</option>
+                                <option value="powerpoint">PowerPoint</option>
+                            </select>
+
+                            <!-- Hidden checkbox for JS -->
+                            <input type="checkbox" id="generateAnswer" checked style="display:none">
+
+                            <!-- PDF Style Group (Hidden by default) -->
+                            <div id="pdfStyleGroup" style="display:none; display:flex; gap:8px;">
+                                <select id="pdfStyle" class="pill-select">
+                                    <option value="executive">Executive</option>
+                                    <option value="modernist">Modernist</option>
+                                    <option value="academic">Academic</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button id="queryBtn" class="send-btn">
+                            <span class="material-symbols-outlined">arrow_upward</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Main Area -->
-            <div class="main-area">
-                <!-- Ingest Section -->
-                <div class="card">
-                    <h2>📁 Ingest Documents</h2>
-                    <div class="form-group">
-                        <label for="ingestProject">Project:</label>
-                        <select id="ingestProject" class="input">
-                            <option value="">Select project...</option>
-                        </select>
-                    </div>
+            <!-- Hidden inputs required for logic -->
+            <select id="queryProject" style="display:none"></select>
+        </main>
+    </div>
 
-                    <div class="form-group">
-                        <label for="ingestConfig">Configuration (optional):</label>
-                        <select id="ingestConfig" class="input">
-                            <option value="">Default (configs/default.yaml)</option>
-                        </select>
-                        <small style="color: #999;">Choose config for embeddings, LLM, and storage settings</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fileUpload">Upload Files:</label>
-                        <input type="file" id="fileUpload" multiple accept=".pdf,.txt,.md" class="input">
-                    </div>
-
-                    <button id="ingestBtn" class="btn btn-primary btn-large">Ingest Documents</button>
-
-                    <div id="ingestStatus" class="status-message"></div>
+    <!-- Ingest Modal -->
+    <div id="ingestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Source</h2>
+                <span class="close" id="closeIngestModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Project</label>
+                    <select id="ingestProject" class="input-field"></select>
+                </div>
+                <div class="form-group">
+                    <label>File Upload (PDF, MD, TXT)</label>
+                    <input type="file" id="fileUpload" multiple accept=".pdf,.txt,.md" class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>Configuration (Optional)</label>
+                    <select id="ingestConfig" class="input-field">
+                        <option value="">Default</option>
+                    </select>
                 </div>
 
-                <!-- Query Section -->
-                <div class="card">
-                    <h2>💬 Query Documents</h2>
-                    <div class="form-group">
-                        <label for="queryProject">Project:</label>
-                        <select id="queryProject" class="input">
-                            <option value="">Select project...</option>
-                        </select>
-                    </div>
+                <div id="ingestStatus" class="status-message" style="display:none"></div>
 
-                    <div class="form-group">
-                        <label for="queryConfig">Configuration (optional):</label>
-                        <select id="queryConfig" class="input">
-                            <option value="">Use project default</option>
-                        </select>
-                        <small style="color: #999;">Override config for this query only</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="queryText">Query:</label>
-                        <textarea id="queryText" rows="3" placeholder="What are the key findings?"
-                            class="input"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="outputFormat">Output Format:</label>
-                        <select id="outputFormat" class="input">
-                            <option value="">None (JSON only)</option>
-                            <option value="excel">Excel (.xlsx)</option>
-                            <option value="markdown">Markdown (.md)</option>
-                            <option value="json">JSON (.json)</option>
-                            <option value="powerpoint">PowerPoint (.pptx)</option>
-                            <option value="pdf">PDF (.pdf)</option>
-                            <option value="styled_pdf">Styled PDF (.pdf) ✨</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="pdfStyleGroup" style="display: none;">
-                        <label for="pdfStyle">PDF Style:</label>
-                        <select id="pdfStyle" class="input">
-                            <option value="executive">Executive (Clean & Minimal)</option>
-                            <option value="modernist">Modernist (Bold & Impactful)</option>
-                            <option value="academic">Academic (Traditional & Formal)</option>
-                        </select>
-                        <small style="color: #999; display: block; margin-top: 4px;">
-                            Styled PDFs use LLM to structure content into professional reports
-                        </small>
-                    </div>
-
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="generateAnswer" checked>
-                            Generate LLM Answer
-                        </label>
-                    </div>
-
-                    <button id="queryBtn" class="btn btn-primary btn-large">Query</button>
-
-                    <div id="queryStatus" class="status-message"></div>
+                <div style="margin-top:24px; text-align:right;">
+                    <button id="ingestBtn" class="btn-primary">Upload & Process</button>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Results Section -->
-                <div class="card" id="resultsCard" style="display: none;">
-                    <h2>📊 Results</h2>
-
-                    <div class="result-section">
-                        <h3>Answer</h3>
-                        <div id="answerText" class="answer-text"></div>
-                    </div>
-
-                    <div class="result-section" id="outputFileSection" style="display: none;">
-                        <h3>Generated File</h3>
-                        <a id="outputFileLink" class="download-link" target="_blank">📄 Download File</a>
-                    </div>
-
-                    <div class="result-section">
-                        <h3>Sources (<span id="sourcesCount">0</span>)</h3>
-                        <div id="sourcesList" class="sources-list"></div>
-                    </div>
-                </div>
+    <!-- Documents List Modal (Existing Feature) -->
+    <div id="documentsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ingested Sources</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="documentsListContainer"></div>
             </div>
         </div>
     </div>

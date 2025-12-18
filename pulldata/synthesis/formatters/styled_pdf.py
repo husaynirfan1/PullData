@@ -7,9 +7,15 @@ Creates professional PDF reports with 3 visual styles:
 """
 
 import json
+import os
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional
+
+# Fix Windows fontconfig warning
+if os.name == 'nt':  # Windows only
+    os.environ.setdefault('FONTCONFIG_PATH', '')
+    os.environ.setdefault('FONTCONFIG_FILE', '')
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
