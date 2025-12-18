@@ -10,7 +10,8 @@
       "Bash(ls:*)",
       "Bash(Remove-Item -Path \"./data/lm_studio_demo\" -Recurse -Force -ErrorAction SilentlyContinue)",
       "Bash(grep:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(wc:*)"
     ]
   }
 }

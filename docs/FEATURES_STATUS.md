@@ -168,16 +168,20 @@ excel.save(data, "output.xlsx")  # ✅ Works!
 
 #### 8. Web UI & REST API
 
-**Status:** ✅ COMPLETE - FastAPI server with interactive Web UI!
+**Status:** ✅ COMPLETE - FastAPI server with modern Gemini-inspired Web UI!
 
 **What Works:**
 - ✅ FastAPI REST API with full CRUD operations
-- ✅ Interactive Web UI (HTML/CSS/JavaScript)
+- ✅ Modern Gemini-inspired UI design (updated Dec 18, 2024)
+- ✅ **Dark/Light theme toggle** with system preference support
+- ✅ **Playfair Display + Roboto fonts** for elegant typography
+- ✅ Responsive design with smooth transitions
 - ✅ File upload and ingestion via Web UI
+- ✅ Configuration selection (embeddings/LLM settings)
 - ✅ Query interface with output format selection
 - ✅ Real-time results display
 - ✅ File download for generated outputs
-- ✅ Project management
+- ✅ Project management with statistics
 - ✅ Auto-generated API documentation (Swagger)
 
 **Files:**

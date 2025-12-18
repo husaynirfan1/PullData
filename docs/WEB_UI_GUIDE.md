@@ -28,13 +28,17 @@ Server will start on **http://localhost:8000**
 
 ### Features
 
-The Web UI provides a user-friendly interface for:
-- ✅ Creating and managing projects
-- ✅ Uploading and ingesting documents
+The Web UI provides a modern, elegant interface with:
+- ✨ **Gemini-inspired design** with Playfair Display and Roboto fonts
+- 🌓 **Dark/Light theme toggle** (respects system preferences, persists across sessions)
+- ✅ Creating and managing projects with real-time statistics
+- ⚙️ **Configuration selection** for embeddings and LLM settings
+- ✅ Uploading and ingesting documents (PDF, TXT, MD)
 - ✅ Querying documents with LLM
 - ✅ Generating deliverable outputs (Excel, PDF, PowerPoint, Markdown, JSON)
-- ✅ Viewing results and sources
+- ✅ Real-time results display with source citations
 - ✅ Downloading generated files
+- 📱 Responsive design that works on all screen sizes
 
 ### Using the Web UI
 
