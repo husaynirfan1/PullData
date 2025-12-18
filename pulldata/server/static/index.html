@@ -120,7 +120,20 @@
                             <option value="json">JSON (.json)</option>
                             <option value="powerpoint">PowerPoint (.pptx)</option>
                             <option value="pdf">PDF (.pdf)</option>
+                            <option value="styled_pdf">Styled PDF (.pdf) ✨</option>
                         </select>
+                    </div>
+
+                    <div class="form-group" id="pdfStyleGroup" style="display: none;">
+                        <label for="pdfStyle">PDF Style:</label>
+                        <select id="pdfStyle" class="input">
+                            <option value="executive">Executive (Clean & Minimal)</option>
+                            <option value="modernist">Modernist (Bold & Impactful)</option>
+                            <option value="academic">Academic (Traditional & Formal)</option>
+                        </select>
+                        <small style="color: #999; display: block; margin-top: 4px;">
+                            Styled PDFs use LLM to structure content into professional reports
+                        </small>
                     </div>
 
                     <div class="form-group">

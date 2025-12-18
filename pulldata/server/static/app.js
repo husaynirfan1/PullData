@@ -93,6 +93,16 @@ function setupEventListeners() {
     elements.refreshProjectsBtn.addEventListener('click', loadProjects);
     elements.ingestBtn.addEventListener('click', ingestDocuments);
     elements.queryBtn.addEventListener('click', queryDocuments);
+
+    // Show/hide PDF style selector based on output format
+    elements.outputFormat.addEventListener('change', function() {
+        const pdfStyleGroup = document.getElementById('pdfStyleGroup');
+        if (this.value === 'styled_pdf') {
+            pdfStyleGroup.style.display = 'block';
+        } else {
+            pdfStyleGroup.style.display = 'none';
+        }
+    });
 }
 
 // API Functions
@@ -286,6 +296,7 @@ async function queryDocuments() {
     const query = elements.queryText.value.trim();
     const outputFormat = elements.outputFormat.value || null;
     const generateAnswer = elements.generateAnswer.checked;
+    const pdfStyle = document.getElementById('pdfStyle').value;
 
     if (!project) {
         showStatus(elements.queryStatus, 'Please select a project', 'error');
@@ -309,6 +320,11 @@ async function queryDocuments() {
             generate_answer: generateAnswer,
             output_format: outputFormat,
         };
+
+        // Add pdf_style if styled_pdf format is selected
+        if (outputFormat === 'styled_pdf') {
+            requestBody.pdf_style = pdfStyle;
+        }
 
         // Add config_path if specified
         if (configPath) {

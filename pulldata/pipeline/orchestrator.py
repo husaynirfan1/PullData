@@ -193,7 +193,16 @@ class PullData:
     def _create_vector_store(self) -> VectorStore:
         """Create vector store from configuration."""
         logger.debug("Creating vector store...")
-        
+
+        # Check if existing index exists
+        index_path = Path(f"./data/{self.project}/faiss_index")
+        if index_path.exists() and (index_path / "index.faiss").exists():
+            logger.info(f"Loading existing FAISS index from {index_path}")
+            try:
+                return VectorStore.load(index_path)
+            except Exception as e:
+                logger.warning(f"Failed to load existing index: {e}. Creating new index.")
+
         # Map metric from config to FAISS format
         metric = self.config.retrieval.vector_search.metric
         if metric.lower() == "cosine":
@@ -202,7 +211,7 @@ class PullData:
             faiss_metric = "L2"
         else:
             faiss_metric = metric
-        
+
         # Normalize index type to proper case
         index_type = self.config.retrieval.vector_search.index_type
         if index_type.lower() == "flat":
@@ -211,7 +220,8 @@ class PullData:
             index_type = "IVF"
         elif index_type.lower() == "hnsw":
             index_type = "HNSW"
-        
+
+        logger.info("Creating new FAISS index")
         return VectorStore(
             dimension=self.config.models.embedder.dimension,
             index_type=index_type,
@@ -446,12 +456,17 @@ class PullData:
         self._metadata_store.add_document(document)
         for chunk in chunks_to_process:
             self._metadata_store.add_chunk(chunk)
-        
+
         # Store vectors
         self._vector_store.add(embeddings)
-        
+
+        # Auto-save vector store to disk for persistence
+        index_path = Path(f"./data/{self.project}/faiss_index")
+        self._vector_store.save(index_path)
+        logger.debug(f"Saved vector store to {index_path}")
+
         stats["new_chunks"] = len(chunks_to_process)
-        
+
         logger.debug(f"Successfully ingested {document.id}")
         return stats
 
@@ -461,19 +476,21 @@ class PullData:
         k: Optional[int] = None,
         filters: Optional[Dict[str, Any]] = None,
         generate_answer: bool = True,
-        output_format: Optional[Literal["excel", "markdown", "json", "powerpoint", "pdf"]] = None,
+        output_format: Optional[Literal["excel", "markdown", "json", "powerpoint", "pdf", "styled_pdf"]] = None,
+        pdf_style: Optional[Literal["executive", "modernist", "academic"]] = "executive",
         **llm_kwargs,
     ) -> Union[QueryResult, OutputData]:
         """Query the system and optionally generate formatted output.
-        
+
         Args:
             query: Query string
             k: Number of chunks to retrieve (uses config default if None)
             filters: Optional metadata filters
             generate_answer: Whether to generate an answer with LLM
             output_format: Optional output format for results
+            pdf_style: PDF style for styled_pdf format (executive, modernist, academic)
             **llm_kwargs: Additional LLM generation parameters
-            
+
         Returns:
             QueryResult object (or OutputData if output_format specified)
         """
@@ -520,7 +537,7 @@ class PullData:
         # If output format specified, format and save to file
         if output_format:
             output_data = self._convert_to_output_data(result)
-            formatter = self._get_formatter(output_format)
+            formatter = self._get_formatter(output_format, pdf_style=pdf_style)
 
             # Create output directory if it doesn't exist
             output_dir = Path("./output")
@@ -572,11 +589,16 @@ class PullData:
             metadata={},
         )
 
-    def _get_formatter(self, format_type: str) -> OutputFormatter:
+    def _get_formatter(
+        self,
+        format_type: str,
+        pdf_style: Optional[str] = "executive",
+    ) -> OutputFormatter:
         """Get formatter instance for the specified format.
 
         Args:
-            format_type: Format type ('excel', 'markdown', 'json', 'powerpoint', 'pdf')
+            format_type: Format type ('excel', 'markdown', 'json', 'powerpoint', 'pdf', 'styled_pdf')
+            pdf_style: PDF style for styled_pdf format (executive, modernist, academic)
 
         Returns:
             OutputFormatter instance
@@ -584,6 +606,11 @@ class PullData:
         Raises:
             ValueError: If format_type is not supported
         """
+        # Handle styled_pdf format specially
+        if format_type == "styled_pdf":
+            from pulldata.synthesis.formatters.styled_pdf import StyledPDFFormatter
+            return StyledPDFFormatter(style=pdf_style, llm=self._llm)
+
         formatters = {
             "excel": ExcelFormatter,
             "markdown": MarkdownFormatter,
@@ -595,7 +622,7 @@ class PullData:
         if format_type not in formatters:
             raise ValueError(
                 f"Unsupported format: {format_type}. "
-                f"Supported formats: {', '.join(formatters.keys())}"
+                f"Supported formats: {', '.join(list(formatters.keys()) + ['styled_pdf'])}"
             )
 
         return formatters[format_type]()

@@ -1,0 +1,327 @@
+/**
+ * Style B: "The Modernist"
+ * Bold typography, high contrast, dark-mode accents
+ * Sidebar layout for metrics with asymmetric design
+ */
+
+/* Page Setup */
+@page {
+    size: A4;
+    margin: 1.5cm 2cm;
+    @bottom-left {
+        content: counter(page);
+        font-size: 24pt;
+        font-weight: 900;
+        color: #f59e0b;
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Outfit', 'Poppins', 'Montserrat', sans-serif;
+    font-size: 10pt;
+    line-height: 1.6;
+    color: #0f172a;
+    background: #ffffff;
+}
+
+/* Typography - Bold & Expressive */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 900;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    page-break-after: avoid;
+}
+
+h1 {
+    font-size: 42pt;
+    margin-bottom: 12pt;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+h2 {
+    font-size: 20pt;
+    margin-top: 28pt;
+    margin-bottom: 14pt;
+    color: #0f172a;
+    border-left: 5pt solid #f59e0b;
+    padding-left: 12pt;
+}
+
+h3 {
+    font-size: 14pt;
+    margin-top: 20pt;
+    margin-bottom: 10pt;
+    color: #475569;
+}
+
+p {
+    margin-bottom: 10pt;
+    font-weight: 400;
+}
+
+/* Header - Dark Accent */
+.report-header {
+    background: #0f172a;
+    color: white;
+    padding: 32pt 28pt;
+    margin: -1.5cm -2cm 0 -2cm;
+    page-break-after: avoid;
+    position: relative;
+    overflow: hidden;
+}
+
+.report-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(135deg, #f59e0b20, #ef444420);
+    transform: skewX(-15deg);
+    transform-origin: top right;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+}
+
+.report-title {
+    font-size: 40pt;
+    font-weight: 900;
+    margin: 0 0 10pt 0;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+}
+
+.report-subtitle {
+    font-size: 16pt;
+    opacity: 0.8;
+    font-weight: 600;
+    margin-bottom: 20pt;
+    letter-spacing: 0.02em;
+}
+
+.report-meta {
+    display: flex;
+    gap: 24pt;
+    font-size: 9pt;
+    opacity: 0.7;
+    margin-top: 20pt;
+    padding-top: 20pt;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Summary - High Contrast Box */
+.summary-section {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: white;
+    padding: 28pt;
+    margin: 20pt -2cm 28pt -2cm;
+    page-break-inside: avoid;
+    border-top: 5pt solid #f59e0b;
+}
+
+.summary-heading {
+    font-size: 14pt;
+    color: #f59e0b;
+    margin-bottom: 14pt;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 900;
+}
+
+.summary-content {
+    font-size: 11pt;
+    line-height: 1.7;
+    font-weight: 400;
+    opacity: 0.95;
+}
+
+/* Metrics - Sidebar Layout */
+.metrics-section {
+    margin: 28pt 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12pt;
+    page-break-inside: avoid;
+}
+
+.metric-card {
+    background: #f59e0b;
+    color: white;
+    padding: 18pt;
+    position: relative;
+    overflow: hidden;
+    min-height: 80pt;
+}
+
+.metric-card:nth-child(even) {
+    background: #ef4444;
+}
+
+.metric-card:nth-child(3n) {
+    background: #8b5cf6;
+}
+
+.metric-icon {
+    position: absolute;
+    top: 10pt;
+    right: 10pt;
+    font-size: 32pt;
+    opacity: 0.3;
+}
+
+.metric-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 8pt;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
+.metric-value {
+    font-size: 28pt;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+/* Main Content - Asymmetric */
+.report-content {
+    margin-top: 28pt;
+}
+
+.content-section {
+    margin-bottom: 32pt;
+}
+
+.section-heading {
+    page-break-after: avoid;
+}
+
+.section-content {
+    margin-top: 14pt;
+    margin-left: 17pt;
+}
+
+/* Subsections */
+.subsections {
+    margin-top: 20pt;
+    margin-left: 20pt;
+    border-left: 3pt solid #f59e0b;
+    padding-left: 16pt;
+}
+
+.subsection {
+    margin-bottom: 18pt;
+}
+
+.subsection-heading {
+    color: #0f172a;
+    font-size: 12pt;
+}
+
+.subsection-content {
+    margin-top: 8pt;
+    color: #475569;
+}
+
+/* References - Minimal */
+.references-section {
+    margin-top: 40pt;
+    padding: 24pt;
+    background: #f8fafc;
+    page-break-before: auto;
+}
+
+.references-heading {
+    font-size: 16pt;
+    color: #0f172a;
+    margin-bottom: 16pt;
+}
+
+.references-list {
+    padding-left: 20pt;
+    list-style: none;
+    counter-reset: ref-counter;
+}
+
+.reference-item {
+    margin-bottom: 12pt;
+    font-size: 8pt;
+    color: #475569;
+    line-height: 1.5;
+    counter-increment: ref-counter;
+    position: relative;
+}
+
+.reference-item::before {
+    content: counter(ref-counter);
+    position: absolute;
+    left: -20pt;
+    width: 16pt;
+    height: 16pt;
+    background: #f59e0b;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7pt;
+    font-weight: 900;
+}
+
+.reference-link {
+    color: #f59e0b;
+    text-decoration: none;
+    word-break: break-all;
+    font-weight: 600;
+}
+
+.reference-page,
+.reference-score {
+    color: #94a3b8;
+    font-size: 7pt;
+    margin-left: 8pt;
+}
+
+/* Footer */
+.report-footer {
+    margin-top: 48pt;
+    padding: 16pt 0;
+    text-align: center;
+    font-size: 7pt;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Print Optimizations */
+@media print {
+    .report-header,
+    .summary-section,
+    .metrics-section,
+    .content-section,
+    .subsection {
+        page-break-inside: avoid;
+    }
+
+    .section-heading,
+    .subsection-heading {
+        page-break-after: avoid;
+    }
+}

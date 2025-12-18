@@ -6,7 +6,7 @@ Converts structured data into various output formats:
 - PowerPoint (.pptx)
 - Markdown (.md)
 - JSON
-- PDF
+- PDF (basic and styled with LLM structuring)
 """
 
 from pulldata.synthesis.base import (
@@ -22,6 +22,15 @@ from pulldata.synthesis.formatters import (
     MarkdownFormatter,
     PDFFormatter,
     PowerPointFormatter,
+    StyledPDFFormatter,
+    render_styled_pdf,
+)
+from pulldata.synthesis.report_models import (
+    MetricItem,
+    Reference,
+    ReportData,
+    ReportSection,
+    get_structuring_prompt,
 )
 
 __all__ = [
@@ -37,4 +46,12 @@ __all__ = [
     "JSONFormatter",
     "PowerPointFormatter",
     "PDFFormatter",
+    "StyledPDFFormatter",
+    "render_styled_pdf",
+    # Report models
+    "ReportData",
+    "ReportSection",
+    "MetricItem",
+    "Reference",
+    "get_structuring_prompt",
 ]

@@ -40,7 +40,8 @@ class QueryRequest(BaseModel):
     query: str = Field(..., description="Query text")
     k: Optional[int] = Field(5, description="Number of results to retrieve")
     generate_answer: bool = Field(True, description="Whether to generate LLM answer")
-    output_format: Optional[str] = Field(None, description="Output format (excel, markdown, json, powerpoint, pdf)")
+    output_format: Optional[str] = Field(None, description="Output format (excel, markdown, json, powerpoint, pdf, styled_pdf)")
+    pdf_style: Optional[str] = Field("executive", description="PDF style for styled_pdf format (executive, modernist, academic)")
     filters: Optional[Dict[str, Any]] = Field(None, description="Metadata filters")
     config_path: Optional[str] = Field(None, description="Path to config YAML file (relative to configs/)")
 
@@ -366,6 +367,7 @@ async def query_documents(request: QueryRequest):
             filters=request.filters,
             generate_answer=request.generate_answer,
             output_format=request.output_format,
+            pdf_style=request.pdf_style,  # Pass PDF style for styled_pdf format
         )
 
         # Convert to response format

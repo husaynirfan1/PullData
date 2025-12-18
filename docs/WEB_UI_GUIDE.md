@@ -69,7 +69,13 @@ The Web UI provides a modern, elegant interface with:
    - Markdown (.md) - Document format
    - JSON (.json) - Structured data
    - PowerPoint (.pptx) - Presentation
-   - PDF (.pdf) - Report format
+   - PDF (.pdf) - Basic report format
+   - **Styled PDF (.pdf) ✨** - Professional styled report (NEW!)
+     - Automatically structures content using LLM
+     - Three visual styles available:
+       - **Executive**: Clean & minimal (perfect for executives)
+       - **Modernist**: Bold & impactful (great for presentations)
+       - **Academic**: Traditional & formal (ideal for research)
 5. Toggle "Generate LLM Answer" if needed
 6. Click "Query"
 
@@ -79,6 +85,60 @@ Results display:
 - **Answer**: LLM-generated response
 - **Generated File**: Download link (if output format selected)
 - **Sources**: Retrieved chunks with similarity scores
+
+---
+
+## Styled PDF Reports
+
+### Overview
+
+The **Styled PDF** feature uses AI to transform raw query results into professional, well-structured reports with three distinct visual styles.
+
+### How It Works
+
+1. **Query documents** as normal
+2. **Select "Styled PDF"** as output format
+3. **Choose a style**:
+   - **Executive**: Clean, minimalist design with blue/grey palette
+   - **Modernist**: Bold typography with high-contrast dark accents
+   - **Academic**: Traditional serif fonts with two-column layout
+4. **Submit query**
+5. **LLM automatically structures** the content into:
+   - Title and summary
+   - Key metrics (if present in data)
+   - Organized sections with headings
+   - Source citations
+
+### Visual Style Comparison
+
+| Feature | Executive | Modernist | Academic |
+|---------|-----------|-----------|----------|
+| **Font** | Sans-serif (clean) | Sans-serif (bold) | Serif (traditional) |
+| **Layout** | Single column | Asymmetric | Two-column |
+| **Best For** | Board meetings | Marketing | Research papers |
+| **Tone** | Professional | Impactful | Scholarly |
+
+### Example Workflow
+
+```
+1. Select project: "financial_reports"
+2. Enter query: "What were Q3 2024 results?"
+3. Output format: "Styled PDF"
+4. PDF Style: "Executive"
+5. Click "Query"
+6. Download professional report with:
+   - Executive summary
+   - Key metrics (Revenue, Growth, etc.)
+   - Organized findings
+   - Source references
+```
+
+### Tips
+
+- **Executive style**: Best for time-sensitive reports to leadership
+- **Modernist style**: Use when you want to make a strong visual impression
+- **Academic style**: Ideal for detailed technical or research documentation
+- **LLM requirement**: Styled PDFs require an LLM to be configured (works with OpenAI, LM Studio, Ollama, etc.)
 
 ---
 
@@ -268,7 +328,8 @@ Query documents and optionally generate formatted output.
   "query": "What are the Q3 revenue figures?",
   "k": 5,
   "generate_answer": true,
-  "output_format": "excel",
+  "output_format": "styled_pdf",
+  "pdf_style": "executive",
   "config_path": "configs/lm_studio.yaml",
   "filters": {
     "department": "Finance"
@@ -281,9 +342,20 @@ Query documents and optionally generate formatted output.
 - `query` (required): Query text
 - `k` (optional): Number of results to retrieve (default: 5)
 - `generate_answer` (optional): Generate LLM answer (default: true)
-- `output_format` (optional): Output format (`excel`, `markdown`, `json`, `powerpoint`, `pdf`)
+- `output_format` (optional): Output format (`excel`, `markdown`, `json`, `powerpoint`, `pdf`, `styled_pdf`)
+- `pdf_style` (optional): PDF style for `styled_pdf` format - `executive`, `modernist`, or `academic` (default: `executive`)
 - `config_path` (optional): Path to config YAML file (overrides project default)
 - `filters` (optional): Metadata filters
+
+**Styled PDF Example:**
+```json
+{
+  "project": "financial_reports",
+  "query": "Summarize Q3 2024 performance",
+  "output_format": "styled_pdf",
+  "pdf_style": "executive"
+}
+```
 
 **Response:**
 ```json
