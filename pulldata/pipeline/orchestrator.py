@@ -669,7 +669,15 @@ class PullData:
         # Handle styled_pdf format specially
         if format_type == "styled_pdf":
             from pulldata.synthesis.formatters.styled_pdf import StyledPDFFormatter
-            return StyledPDFFormatter(style=pdf_style, llm=self._llm)
+            # Uses chain-based structuring optimized for small models (1.7B-7B):
+            # - Multiple simple LLM calls, each returning plain text
+            # - No JSON generation required from the model
+            # - Pydantic validates the assembled data
+            return StyledPDFFormatter(
+                style=pdf_style,
+                llm=self._llm,
+                use_llm_structuring=True,  # Uses chain method
+            )
 
         formatters = {
             "excel": ExcelFormatter,

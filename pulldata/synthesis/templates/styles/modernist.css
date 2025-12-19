@@ -1,34 +1,48 @@
+/* =============================================================================
+   MODERNIST STYLE - Bold, High-Impact Dark Theme
+   Striking visuals for memorable presentations
+   ============================================================================= */
+
+@page {
+    size: A4;
+    margin: 0;
+}
+
 :root {
-    --bg-page: #0f172a;
-    --bg-card: #1e293b;
-    --primary: #38bdf8;
-    /* Cyan */
-    --secondary: #a855f7;
-    /* Purple */
-    --accent: #f472b6;
-    /* Pink */
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
+    --bg-page: #0a0a0f;
+    --bg-card: #141419;
+    --bg-elevated: #1c1c24;
+    --primary: #00d4ff;
+    --secondary: #8b5cf6;
+    --accent: #f43f5e;
+    --gold: #f59e0b;
+    --success: #10b981;
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
 
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    --gradient-hero: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
-    --glow-primary: 0 0 20px rgba(56, 189, 248, 0.3);
+    --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 100%);
+    --gradient-accent: linear-gradient(135deg, #f43f5e 0%, #f59e0b 100%);
+    --glow-primary: 0 0 30px rgba(0, 212, 255, 0.3);
+    --glow-secondary: 0 0 30px rgba(139, 92, 246, 0.3);
 }
 
 body {
     font-family: var(--font-body);
     background-color: var(--bg-page);
     color: var(--text-primary);
-    line-height: 1.6;
+    line-height: 1.7;
     margin: 0;
+    font-size: 11pt;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 }
 
-/* Background Elements */
+/* Background Effects */
 .bg-decoration {
     position: fixed;
     top: 0;
@@ -37,106 +51,185 @@ body {
     height: 100%;
     z-index: -1;
     background-image:
-        radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.1) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
+        radial-gradient(ellipse at 20% 0%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
 }
 
-.bg-shape {
-    display: none;
-}
+.bg-shape { display: none; }
 
-/* Header */
+/* =============================================================================
+   HEADER - Dramatic Hero
+   ============================================================================= */
 .report-header {
-    padding: 4rem;
+    padding: 72pt 48pt 56pt 48pt;
     position: relative;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-page) 100%);
 }
 
-.header-accent {
+.report-header::before {
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--primary), var(--secondary));
+    right: 0;
+    height: 4pt;
+    background: var(--gradient-primary);
 }
 
-.brand-mark {
-    font-family: var(--font-mono);
-    color: var(--primary);
-    margin-bottom: 2rem;
+.header-decoration {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
+    gap: 12pt;
+    margin-bottom: 32pt;
+}
+
+.decoration-line {
+    height: 1pt;
+    background: var(--gradient-primary);
+    width: 48pt;
+}
+
+.decoration-dot {
+    width: 6pt;
+    height: 6pt;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: var(--glow-primary);
+}
+
+.header-content {
+    position: relative;
+}
+
+.classification-badge {
+    display: inline-block;
+    background: var(--gradient-accent);
+    color: white;
+    padding: 6pt 16pt;
+    border-radius: 3pt;
+    text-transform: uppercase;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 2pt;
+    margin-bottom: 24pt;
 }
 
 .report-title {
     font-family: var(--font-heading);
-    font-size: 4rem;
+    font-size: 36pt;
     font-weight: 800;
-    line-height: 1;
-    margin: 0 0 1rem 0;
-    background: linear-gradient(to right, white, var(--text-secondary));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -2px;
+    line-height: 1.2;
+    margin: 0 0 16pt 0;
+    color: #ffffff;
+    letter-spacing: -0.5pt;
 }
 
 .report-subtitle {
     font-family: var(--font-mono);
     color: var(--text-secondary);
-    font-size: 1.2rem;
-    margin: 0 0 3rem 0;
+    font-size: 12pt;
+    margin: 0 0 32pt 0;
+    font-weight: 400;
 }
 
 .report-meta {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 2rem;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 1.5rem;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    gap: 32pt;
+    padding: 20pt 24pt;
+    background: var(--bg-elevated);
+    border-radius: 6pt;
+    border: 1pt solid rgba(255, 255, 255, 0.05);
 }
 
 .meta-item {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.meta-icon {
-    color: var(--secondary);
-    font-size: 1.2rem;
+    flex-direction: column;
+    gap: 4pt;
 }
 
 .meta-label {
-    display: block;
-    font-size: 0.7rem;
+    font-size: 7pt;
     text-transform: uppercase;
-    color: var(--text-secondary);
-    letter-spacing: 1px;
+    color: var(--primary);
+    letter-spacing: 1.5pt;
+    font-weight: 600;
 }
 
 .meta-value {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: 10pt;
     color: white;
 }
 
-/* Executive Summary */
+/* =============================================================================
+   KEY INSIGHT - Glowing Callout
+   ============================================================================= */
+.key-insight-section {
+    margin: 0;
+    padding: 0;
+}
+
+.key-insight-wrapper {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(244, 63, 94, 0.15) 100%);
+    border: 1pt solid rgba(245, 158, 11, 0.3);
+    padding: 24pt 32pt;
+    margin: 32pt 48pt;
+    position: relative;
+    border-radius: 6pt;
+}
+
+.key-insight-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3pt;
+    background: var(--gradient-accent);
+    border-radius: 6pt 6pt 0 0;
+}
+
+.key-insight-icon {
+    position: absolute;
+    top: -10pt;
+    left: 24pt;
+    font-size: 16pt;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+}
+
+.key-insight-label {
+    text-transform: uppercase;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 2pt;
+    color: var(--gold);
+    margin-bottom: 8pt;
+    font-family: var(--font-mono);
+}
+
+.key-insight-text {
+    font-family: var(--font-heading);
+    font-size: 14pt;
+    font-weight: 600;
+    color: white;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* =============================================================================
+   EXECUTIVE SUMMARY
+   ============================================================================= */
 .summary-section {
-    padding: 4rem;
+    padding: 32pt 48pt;
 }
 
 .summary-wrapper {
     background: var(--bg-card);
-    padding: 3rem;
-    border-radius: 12px;
+    padding: 32pt;
+    border-radius: 8pt;
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1pt solid rgba(255, 255, 255, 0.05);
     overflow: hidden;
 }
 
@@ -146,72 +239,90 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    height: 3pt;
+    background: var(--gradient-primary);
 }
 
 .summary-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    background: rgba(56, 189, 248, 0.1);
+    background: rgba(0, 212, 255, 0.1);
     color: var(--primary);
-    padding: 0.5rem 1rem;
-    border-radius: 100px;
-    font-size: 0.8rem;
+    padding: 6pt 16pt;
+    border-radius: 100pt;
+    font-size: 8pt;
     font-family: var(--font-mono);
-    margin-bottom: 2rem;
-    border: 1px solid rgba(56, 189, 248, 0.2);
+    margin-bottom: 20pt;
+    border: 1pt solid rgba(0, 212, 255, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 1pt;
 }
 
-.summary-text {
-    font-size: 1.25rem;
-    color: var(--text-primary);
-    font-weight: 300;
-}
-
-.summary-quote-mark,
-.summary-decoration {
+.summary-quote-mark {
     display: none;
 }
 
-/* Metrics */
+.summary-text {
+    font-size: 12pt;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin: 0;
+}
+
+/* =============================================================================
+   METRICS - Glowing Cards
+   ============================================================================= */
 .metrics-section {
-    padding: 0 4rem 4rem 4rem;
+    padding: 32pt 36pt;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .section-header {
     display: flex;
     align-items: center;
-    margin-bottom: 2rem;
-    gap: 1rem;
+    margin-bottom: 24pt;
+    gap: 16pt;
 }
 
 .section-title {
     font-family: var(--font-heading);
-    font-size: 2rem;
+    font-size: 14pt;
     font-weight: 700;
     margin: 0;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
 }
 
 .section-line {
-    display: none;
+    flex: 1;
+    height: 1pt;
+    background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 100%);
 }
 
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12pt;
 }
 
 .metric-card {
     background: var(--bg-card);
-    padding: 2rem;
-    border-radius: 8px;
+    padding: 24pt;
+    border-radius: 8pt;
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1pt solid rgba(255, 255, 255, 0.05);
     overflow: hidden;
+    text-align: center;
 }
+
+.metric-card:nth-child(1) { border-top: 3pt solid var(--primary); }
+.metric-card:nth-child(2) { border-top: 3pt solid var(--secondary); }
+.metric-card:nth-child(3) { border-top: 3pt solid var(--accent); }
+.metric-card:nth-child(4) { border-top: 3pt solid var(--gold); }
+.metric-card:nth-child(5) { border-top: 3pt solid var(--success); }
+.metric-card:nth-child(6) { border-top: 3pt solid var(--primary); }
 
 .metric-glow {
     position: absolute;
@@ -219,74 +330,86 @@ body {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 50%);
-    opacity: 0.5;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
 }
 
 .metric-value {
     font-family: var(--font-mono);
-    font-size: 2.5rem;
+    font-size: 28pt;
+    font-weight: 700;
     color: white;
-    margin-bottom: 0.5rem;
+    margin-bottom: 6pt;
     position: relative;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
 .metric-label {
     font-family: var(--font-heading);
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: 9pt;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1pt;
     position: relative;
 }
+
+.metric-context {
+    color: var(--text-muted);
+    font-size: 8pt;
+    margin-top: 8pt;
+    font-family: var(--font-mono);
+}
+
+.metric-trend {
+    position: absolute;
+    top: 16pt;
+    right: 16pt;
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+.metric-trend-up { color: var(--success); text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+.metric-trend-down { color: var(--accent); text-shadow: 0 0 10px rgba(244, 63, 94, 0.5); }
+.metric-trend-stable { color: var(--text-muted); }
 
 .metric-bar {
-    height: 4px;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    margin-top: 1.5rem;
-    position: relative;
-    border-radius: 2px;
+    display: none;
 }
 
-.metric-bar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 60%;
-    background: var(--gradient-hero);
-    border-radius: 2px;
-}
-
-/* Content */
+/* =============================================================================
+   CONTENT SECTIONS
+   ============================================================================= */
 .report-content {
-    padding: 0 4rem 4rem 4rem;
+    padding: 32pt 48pt;
 }
 
 .content-section {
-    margin-bottom: 5rem;
+    margin-bottom: 48pt;
+    page-break-inside: avoid;
 }
 
-.section-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 1rem;
-    margin-bottom: 2rem;
+.content-section .section-header {
+    border-bottom: 1pt solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 16pt;
+    margin-bottom: 24pt;
 }
 
 .section-number {
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: 10pt;
     color: var(--primary);
-    margin-bottom: 0.5rem;
+    margin-right: 12pt;
 }
 
 .section-heading {
-    font-size: 2.5rem;
+    font-family: var(--font-heading);
+    font-size: 20pt;
+    font-weight: 700;
     margin: 0;
     color: white;
+}
+
+.section-body {
+    padding-left: 0;
 }
 
 .section-accent-line {
@@ -294,111 +417,292 @@ body {
 }
 
 .section-content {
-    font-size: 1.1rem;
-    color: #cbd5e1;
+    font-size: 11pt;
+    color: var(--text-secondary);
+    line-height: 1.8;
+}
+
+.section-content p {
+    margin: 0 0 16pt 0;
 }
 
 .section-content h3 {
     color: var(--primary);
     font-family: var(--font-mono);
-    margin-top: 3rem;
-    font-size: 1.2rem;
+    margin: 24pt 0 12pt 0;
+    font-size: 11pt;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+}
+
+.section-content ul,
+.section-content ol {
+    padding-left: 24pt;
+    margin: 16pt 0;
+}
+
+.section-content li {
+    margin-bottom: 8pt;
+}
+
+.section-content strong {
+    color: white;
+    font-weight: 600;
 }
 
 /* Subsections */
-.subsection {
-    border-left: 2px solid var(--secondary);
-    padding-left: 2rem;
-    margin-top: 3rem;
+.subsections {
+    margin-top: 24pt;
 }
 
-.subsection-heading {
-    color: var(--text-primary);
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
-    margin: 0 0 1rem 0;
+.subsection {
+    border-left: 2pt solid var(--secondary);
+    padding-left: 20pt;
+    margin-top: 20pt;
 }
 
 .subsection-marker {
     display: none;
 }
 
-/* References */
+.subsection-heading {
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    font-size: 13pt;
+    font-weight: 600;
+    margin: 0 0 10pt 0;
+}
+
+.subsection-content {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* =============================================================================
+   RECOMMENDATIONS
+   ============================================================================= */
+.recommendations-section {
+    margin: 32pt 48pt;
+    padding: 32pt;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-radius: 8pt;
+    border: 1pt solid rgba(16, 185, 129, 0.2);
+    page-break-inside: avoid;
+}
+
+.recommendations-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3pt;
+    background: var(--success);
+    border-radius: 8pt 8pt 0 0;
+}
+
+.recommendations-header {
+    display: flex;
+    align-items: center;
+    gap: 12pt;
+    margin-bottom: 24pt;
+}
+
+.recommendations-icon {
+    font-size: 14pt;
+    color: var(--success);
+}
+
+.recommendations-title {
+    font-family: var(--font-heading);
+    font-size: 14pt;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+}
+
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16pt;
+}
+
+.recommendation-item {
+    display: flex;
+    gap: 16pt;
+    align-items: flex-start;
+}
+
+.recommendation-number {
+    background: var(--success);
+    color: white;
+    width: 24pt;
+    height: 24pt;
+    border-radius: 4pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 10pt;
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+}
+
+.recommendation-content {
+    font-size: 11pt;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding-top: 2pt;
+}
+
+/* =============================================================================
+   REFERENCES
+   ============================================================================= */
 .references-section {
-    margin: 4rem;
-    background: #111827;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 2rem;
+    margin: 32pt 48pt;
+    background: var(--bg-card);
+    border: 1pt solid rgba(255, 255, 255, 0.05);
+    border-radius: 8pt;
+    padding: 32pt;
+    page-break-inside: avoid;
+}
+
+.references-header {
+    margin-bottom: 20pt;
 }
 
 .references-title {
     font-family: var(--font-heading);
+    font-size: 12pt;
+    font-weight: 700;
     color: white;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+}
+
+.references-container {
+    display: flex;
+    flex-direction: column;
 }
 
 .reference-item {
     display: flex;
-    margin-bottom: 1.5rem;
-    gap: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    gap: 16pt;
+    padding: 12pt 0;
+    border-bottom: 1pt solid rgba(255, 255, 255, 0.05);
+}
+
+.reference-item:last-child {
+    border-bottom: none;
 }
 
 .reference-number {
     background: rgba(255, 255, 255, 0.05);
-    width: 2rem;
-    height: 2rem;
+    width: 24pt;
+    height: 24pt;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: 4pt;
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--accent);
+    font-size: 9pt;
+    color: var(--secondary);
+    flex-shrink: 0;
+}
+
+.reference-content {
+    flex: 1;
 }
 
 .reference-title {
     color: var(--text-primary);
     font-weight: 600;
+    font-size: 10pt;
+    margin-bottom: 4pt;
 }
 
 .reference-link {
     color: var(--primary);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: 8pt;
 }
 
-/* Footer */
+.reference-meta {
+    display: flex;
+    gap: 16pt;
+    margin-top: 4pt;
+    font-size: 8pt;
+    color: var(--text-muted);
+}
+
+/* =============================================================================
+   FOOTER
+   ============================================================================= */
 .report-footer {
-    background: #020617;
-    padding: 4rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: #050508;
+    padding: 32pt 48pt;
+    border-top: 1pt solid rgba(255, 255, 255, 0.05);
 }
 
 .footer-decoration {
     display: flex;
     justify-content: center;
-    margin-bottom: 2rem;
+    align-items: center;
+    gap: 16pt;
+    margin-bottom: 20pt;
+}
+
+.footer-line {
+    width: 48pt;
+    height: 1pt;
+    background: var(--gradient-primary);
+}
+
+.footer-diamond {
     color: var(--secondary);
+    font-size: 8pt;
 }
 
 .footer-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 1rem;
+    text-align: center;
 }
 
-.footer-logo {
-    font-size: 2rem;
-    margin-bottom: 1rem;
+.footer-timestamp {
+    font-size: 9pt;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
 }
 
-.footer-name {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    letter-spacing: 2px;
+.footer-tagline {
+    text-align: center;
+    margin-top: 16pt;
+    font-size: 8pt;
+    color: var(--text-muted);
+    letter-spacing: 2pt;
     text-transform: uppercase;
+}
+
+/* =============================================================================
+   PRINT
+   ============================================================================= */
+@media print {
+    body {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .report-header,
+    .key-insight-wrapper,
+    .summary-wrapper,
+    .metric-card,
+    .recommendations-section,
+    .references-section,
+    .report-footer {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
 }

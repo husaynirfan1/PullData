@@ -7,7 +7,8 @@ PullData is a high-performance, text-based RAG (Retrieval-Augmented Generation) 
 ## Key Features
 
 - **Web UI & REST API**: Interactive web interface with FastAPI backend for easy document management
-- **Versatile Output Formats**: Excel (.xlsx), PowerPoint (.pptx), Markdown, JSON, LaTeX, PDF
+- **Versatile Output Formats**: Excel (.xlsx), PowerPoint (.pptx), Styled PDF, Markdown, JSON, LaTeX
+- **VP-Ready Styled PDFs**: Three professional styles (Executive, Modernist, Academic) with chain-based LLM structuring
 - **Advanced Table Extraction**: Preserves table structure and enables direct Excel export
 - **Flexible LLM Options**: Local models OR OpenAI-compatible APIs (LM Studio, Ollama, OpenAI, Groq, etc.)
 - **Pluggable Storage**: PostgreSQL + pgvector, SQLite (local), or ChromaDB
@@ -48,7 +49,8 @@ python run_server.py
 # Open browser to http://localhost:8000/ui/
 # - Upload documents
 # - Query with natural language
-# - Generate Excel, PDF, PowerPoint, and more
+# - Generate Styled PDFs with style selector (Executive, Modernist, Academic)
+# - Export to Excel, PowerPoint, Markdown, and more
 # - Download results instantly
 ```
 
@@ -268,6 +270,33 @@ legal_rag.ingest("legal_docs/")
 
 ## Output Formats
 
+### Styled PDF 
+Professional PDF reports with three distinct styles:
+
+| Style | Description | Best For |
+|-------|-------------|----------|
+| **Executive** | Clean, corporate blue accents, gradient headers | Board presentations, stakeholder reports |
+| **Modernist** | Bold dark theme, high contrast, tech aesthetic | Tech companies, modern brands |
+| **Academic** | Classical serif fonts, scholarly formatting | Research, academic publications |
+
+**Features:**
+- Chain-based LLM structuring (optimized for small models 1.7B-7B)
+- Key metrics dashboard with trend indicators
+- Executive summary with drop-cap styling
+- Actionable recommendations section
+- Source references with relevance scores
+- A4 format with print-optimized layouts
+
+```python
+# Generate styled PDF
+result = rag.query(
+    query="Analyze Q3 performance",
+    output_format="styled_pdf",
+    pdf_style="executive"  # or "modernist", "academic"
+)
+result.save("quarterly_report.pdf")
+```
+
 ### Excel (.xlsx)
 - Preserves table structure from PDFs
 - Automatic styling (headers, filters, freeze panes)
@@ -383,6 +412,8 @@ mypy pulldata/
 - [x] CLI interface
 - [x] FastAPI REST API
 - [x] Web UI with file upload
+- [x] VP-Ready Styled PDFs (Executive, Modernist, Academic)
+- [x] Chain-based LLM structuring for small models
 
 ### In Progress 🚧
 - [ ] ChromaDB backend integration
@@ -434,6 +465,6 @@ Quick links:
 
 ---
 
-**Status**: Alpha - Active Development (~95% Feature Complete)
+**Status**: Alpha - Active Development (~97% Feature Complete)
 
-**Last Updated**: 2024-12-18
+**Last Updated**: 2025-12-20

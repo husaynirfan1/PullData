@@ -1,34 +1,59 @@
-:root {
-    --primary: #1a365d;
-    --primary-light: #2c5282;
-    --secondary: #c5a572;
-    --accent: #e2e8f0;
-    --text-primary: #1a202c;
-    --text-secondary: #4a5568;
-    --bg-page: #ffffff;
-    --bg-card: #f7fafc;
+/* =============================================================================
+   EXECUTIVE STYLE - VP-Ready Premium Design
+   Clean, sophisticated, boardroom-worthy
+   ============================================================================= */
 
-    /* Gradients */
-    --gradient-header: linear-gradient(135deg, #1a365d 0%, #2a4365 100%);
-    --gradient-card: linear-gradient(145deg, #ffffff 0%, #f7fafc 100%);
-
-    /* Shadows */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+/* Page Setup for Print */
+@page {
+    size: A4;
+    margin: 0;
 }
 
+@page :first {
+    margin-top: 0;
+}
+
+:root {
+    /* Premium Color Palette */
+    --primary: #0f172a;
+    --primary-light: #1e293b;
+    --secondary: #b8860b;
+    --accent: #f1f5f9;
+    --accent-gold: linear-gradient(135deg, #d4af37 0%, #b8860b 50%, #8b6914 100%);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-light: #94a3b8;
+    --bg-page: #ffffff;
+    --bg-card: #f8fafc;
+    --success: #059669;
+    --danger: #dc2626;
+
+    /* Premium Gradients */
+    --gradient-header: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --gradient-gold: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+    --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* Base Typography */
 body {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     color: var(--text-primary);
-    line-height: 1.6;
+    line-height: 1.7;
     margin: 0;
+    padding: 0;
     background-color: var(--bg-page);
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    font-size: 11pt;
 }
 
-/* Background Decoration */
+/* Background Decoration - Subtle */
 .bg-decoration {
     position: fixed;
     top: 0;
@@ -37,427 +62,674 @@ body {
     height: 100%;
     z-index: -1;
     overflow: hidden;
+    pointer-events: none;
 }
 
 .bg-shape-1 {
     position: absolute;
-    top: -100px;
-    right: -100px;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(197, 165, 114, 0.05) 0%, transparent 70%);
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(184, 134, 11, 0.03) 0%, transparent 70%);
     border-radius: 50%;
 }
 
 .bg-shape-2 {
+    display: none;
+}
+
+/* =============================================================================
+   HEADER - Premium Cover Page Style
+   ============================================================================= */
+.report-header {
+    background: var(--gradient-header);
+    color: white;
+    padding: 80pt 48pt 60pt 48pt;
+    position: relative;
+    margin-bottom: 0;
+    page-break-after: avoid;
+}
+
+.report-header::before {
+    content: '';
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 100%;
-    height: 10px;
-    background: var(--gradient-header);
-}
-
-/* Header */
-.report-header {
-    padding: 3rem 4rem;
-    position: relative;
-    border-bottom: 2px solid var(--accent);
-    margin-bottom: 4rem;
+    right: 0;
+    height: 6pt;
+    background: var(--gradient-gold);
 }
 
 .header-decoration {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    color: var(--secondary);
+    gap: 12pt;
+    margin-bottom: 32pt;
+    opacity: 0.4;
 }
 
 .decoration-line {
-    height: 1px;
+    height: 1pt;
     background-color: var(--secondary);
-    width: 40px;
+    width: 60pt;
 }
 
 .decoration-dot {
-    width: 6px;
-    height: 6px;
+    width: 8pt;
+    height: 8pt;
     background-color: var(--secondary);
     border-radius: 50%;
 }
 
-.brand-mark {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: 'Outfit', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--primary-light);
-    margin-bottom: 1.5rem;
+.header-content {
+    position: relative;
+    z-index: 1;
 }
 
-.brand-icon {
-    color: var(--secondary);
+.classification-badge {
+    display: inline-block;
+    background: var(--gradient-gold);
+    color: white;
+    padding: 6pt 16pt;
+    border-radius: 4pt;
+    text-transform: uppercase;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 2pt;
+    margin-bottom: 24pt;
 }
 
 .report-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 3.5rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 36pt;
     font-weight: 700;
-    color: var(--primary);
-    line-height: 1.1;
-    margin: 0 0 1rem 0;
+    color: white;
+    line-height: 1.15;
+    margin: 0 0 16pt 0;
+    max-width: 90%;
 }
 
 .report-subtitle {
-    font-size: 1.5rem;
-    color: var(--text-secondary);
-    font-weight: 300;
-    margin: 0 0 2rem 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 14pt;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 400;
+    margin: 0 0 32pt 0;
     max-width: 80%;
+    line-height: 1.5;
 }
 
 .report-meta {
     display: flex;
-    gap: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--accent);
+    gap: 40pt;
+    padding-top: 24pt;
+    border-top: 1pt solid rgba(255, 255, 255, 0.15);
 }
 
 .meta-item {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 4pt;
 }
 
 .meta-label {
     text-transform: uppercase;
-    font-size: 0.65rem;
-    letter-spacing: 1px;
+    font-size: 7pt;
+    letter-spacing: 1.5pt;
     color: var(--secondary);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .meta-value {
     font-weight: 500;
+    color: white;
+    font-size: 10pt;
+}
+
+/* =============================================================================
+   KEY INSIGHT - Hero Callout
+   ============================================================================= */
+.key-insight-section {
+    margin: 0;
+    padding: 0;
+}
+
+.key-insight-wrapper {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 6pt solid var(--secondary);
+    padding: 24pt 32pt;
+    margin: 32pt 48pt;
+    position: relative;
+}
+
+.key-insight-icon {
+    position: absolute;
+    top: -12pt;
+    left: 24pt;
+    font-size: 20pt;
+    color: var(--secondary);
+}
+
+.key-insight-label {
+    text-transform: uppercase;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 2pt;
+    color: var(--secondary);
+    margin-bottom: 8pt;
+}
+
+.key-insight-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 16pt;
+    font-weight: 600;
     color: var(--primary);
+    line-height: 1.4;
+    margin: 0;
+    font-style: italic;
 }
 
-.meta-icon {
-    display: none;
-}
-
-/* Executive Summary */
+/* =============================================================================
+   EXECUTIVE SUMMARY
+   ============================================================================= */
 .summary-section {
-    margin: 0 4rem 4rem 4rem;
+    margin: 32pt 48pt 40pt 48pt;
 }
 
 .summary-wrapper {
     background: var(--gradient-card);
-    border-left: 4px solid var(--secondary);
-    padding: 2.5rem;
-    border-radius: 0 8px 8px 0;
-    box-shadow: var(--shadow-sm);
+    border: 1pt solid #e2e8f0;
+    border-left: 5pt solid var(--primary);
+    padding: 32pt 40pt;
+    border-radius: 0 8pt 8pt 0;
+    box-shadow: var(--shadow-md);
     position: relative;
 }
 
 .summary-badge {
     position: absolute;
-    top: -12px;
-    left: 2rem;
+    top: -14pt;
+    left: 24pt;
     background: var(--primary);
     color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 4px;
+    padding: 8pt 20pt;
+    border-radius: 4pt;
     text-transform: uppercase;
-    font-size: 0.7rem;
+    font-size: 8pt;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 1.5pt;
     box-shadow: var(--shadow-md);
 }
 
-.badge-icon {
-    margin-right: 0.5rem;
-    color: var(--secondary);
+.summary-quote-mark {
+    color: rgba(15, 23, 42, 0.06);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 120pt;
+    position: absolute;
+    top: 0;
+    right: 24pt;
+    line-height: 0.8;
 }
 
-.summary-quote-mark {
-    color: rgba(197, 165, 114, 0.2);
-    font-family: 'Playfair Display', serif;
-    font-size: 6rem;
-    position: absolute;
-    top: 1rem;
-    right: 2rem;
-    line-height: 0;
+.summary-content {
+    position: relative;
+    z-index: 1;
 }
 
 .summary-text {
-    font-size: 1.1rem;
+    font-size: 12pt;
     color: var(--text-primary);
-    position: relative;
-    z-index: 1;
+    line-height: 1.8;
     margin: 0;
 }
 
-/* Metrics */
+/* =============================================================================
+   METRICS DASHBOARD
+   ============================================================================= */
 .metrics-section {
-    margin: 0 4rem 4rem 4rem;
+    margin: 32pt 36pt;
+    page-break-inside: avoid;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .section-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.section-icon {
-    font-size: 1.5rem;
+    gap: 16pt;
+    margin-bottom: 24pt;
 }
 
 .section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-size: 14pt;
+    font-weight: 700;
     color: var(--primary);
     margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
 }
 
 .section-line {
     flex-grow: 1;
-    height: 1px;
+    height: 2pt;
     background: linear-gradient(to right, var(--accent), transparent);
 }
 
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16pt;
 }
 
 .metric-card {
     background: white;
-    padding: 1.5rem;
-    border: 1px solid var(--accent);
-    border-radius: 8px;
+    padding: 24pt;
+    border: 1pt solid #e2e8f0;
+    border-radius: 8pt;
     box-shadow: var(--shadow-sm);
-    transition: transform 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4pt;
+    background: var(--gradient-gold);
+}
+
+.metric-glow {
+    display: none;
 }
 
 .metric-value {
-    font-size: 2rem;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-size: 28pt;
     font-weight: 800;
     color: var(--primary);
-    margin-bottom: 0.25rem;
-    font-family: 'Outfit', sans-serif;
+    margin-bottom: 6pt;
+    line-height: 1;
 }
 
 .metric-label {
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
 }
+
+.metric-context {
+    color: var(--text-light);
+    font-size: 8pt;
+    margin-top: 6pt;
+}
+
+.metric-trend {
+    position: absolute;
+    top: 16pt;
+    right: 16pt;
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+.metric-trend-up { color: var(--success); }
+.metric-trend-down { color: var(--danger); }
+.metric-trend-stable { color: var(--text-light); }
 
 .metric-bar {
-    height: 3px;
-    background: var(--secondary);
-    width: 40px;
-    margin-top: 1rem;
-    opacity: 0.5;
-}
-
-.metric-glow,
-.metric-icon {
     display: none;
 }
 
-/* Content Sections */
+/* =============================================================================
+   CONTENT SECTIONS
+   ============================================================================= */
 .report-content {
-    margin: 0 4rem 4rem 4rem;
+    margin: 40pt 48pt;
 }
 
 .content-section {
-    margin-bottom: 4rem;
+    margin-bottom: 48pt;
     page-break-inside: avoid;
+}
+
+.content-section .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16pt;
+    margin-bottom: 20pt;
+    border-bottom: 2pt solid var(--accent);
+    padding-bottom: 12pt;
 }
 
 .section-number {
     font-family: 'Outfit', sans-serif;
-    font-size: 3rem;
+    font-size: 48pt;
     font-weight: 900;
-    color: rgba(26, 54, 93, 0.05);
+    color: rgba(15, 23, 42, 0.06);
     line-height: 1;
-    margin-right: -1rem;
-    z-index: -1;
+    margin-right: -8pt;
 }
 
 .section-heading {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20pt;
+    font-weight: 700;
     color: var(--primary);
     margin: 0;
+    flex-grow: 1;
 }
 
 .section-body {
-    padding-left: 2rem;
-    border-left: 1px solid var(--accent);
-    margin-top: 1rem;
+    padding-left: 0;
+    border-left: none;
+    margin-top: 0;
+}
+
+.section-accent-line {
+    display: none;
 }
 
 .section-content {
-    font-size: 1rem;
+    font-size: 11pt;
     color: var(--text-secondary);
-    margin-bottom: 2rem;
+    line-height: 1.8;
+}
+
+.section-content p {
+    margin: 0 0 16pt 0;
+}
+
+.section-content p:last-child {
+    margin-bottom: 0;
 }
 
 .section-content h3 {
     font-family: 'Outfit', sans-serif;
+    font-size: 12pt;
+    font-weight: 700;
     color: var(--primary);
-    margin-top: 2rem;
+    margin: 24pt 0 12pt 0;
 }
 
 .section-content ul,
 .section-content ol {
-    padding-left: 1.5rem;
+    padding-left: 24pt;
+    margin: 16pt 0;
 }
 
 .section-content li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 8pt;
+    line-height: 1.6;
+}
+
+.section-content strong {
+    color: var(--primary);
+    font-weight: 600;
 }
 
 /* Subsections */
+.subsections {
+    margin-top: 24pt;
+}
+
 .subsection {
     background: var(--bg-card);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-top: 1.5rem;
-    border: 1px solid var(--accent);
+    border-radius: 8pt;
+    padding: 20pt 24pt;
+    margin-top: 16pt;
+    border: 1pt solid #e2e8f0;
     display: flex;
-    gap: 1rem;
+    gap: 16pt;
 }
 
 .subsection-marker {
     color: var(--secondary);
-    font-size: 0.8rem;
-    margin-top: 0.4rem;
+    font-size: 10pt;
+    margin-top: 2pt;
 }
 
 .subsection-heading {
     font-family: 'Outfit', sans-serif;
+    font-size: 12pt;
+    font-weight: 700;
     color: var(--primary);
-    margin: 0 0 1rem 0;
-    font-size: 1.2rem;
+    margin: 0 0 8pt 0;
 }
 
-/* References */
+.subsection-content {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* =============================================================================
+   RECOMMENDATIONS
+   ============================================================================= */
+.recommendations-section {
+    margin: 48pt;
+    padding: 32pt;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border-radius: 8pt;
+    border-left: 6pt solid var(--success);
+    page-break-inside: avoid;
+}
+
+.recommendations-header {
+    display: flex;
+    align-items: center;
+    gap: 12pt;
+    margin-bottom: 24pt;
+}
+
+.recommendations-icon {
+    font-size: 16pt;
+    color: var(--success);
+}
+
+.recommendations-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14pt;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+}
+
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16pt;
+}
+
+.recommendation-item {
+    display: flex;
+    gap: 16pt;
+    align-items: flex-start;
+}
+
+.recommendation-number {
+    background: var(--success);
+    color: white;
+    width: 24pt;
+    height: 24pt;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 10pt;
+    flex-shrink: 0;
+}
+
+.recommendation-content {
+    font-size: 11pt;
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding-top: 2pt;
+}
+
+/* =============================================================================
+   REFERENCES / SOURCES
+   ============================================================================= */
 .references-section {
-    margin: 4rem;
-    padding: 3rem;
+    margin: 48pt;
+    padding: 32pt;
     background: var(--bg-card);
-    border-top: 4px solid var(--primary);
+    border-top: 4pt solid var(--primary);
+    page-break-inside: avoid;
 }
 
 .references-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 20pt;
 }
 
 .references-title {
-    font-family: 'Playfair Display', serif;
-    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    font-size: 12pt;
+    font-weight: 700;
     color: var(--primary);
-    font-size: 1.5rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+}
+
+.references-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .reference-item {
     display: flex;
-    gap: 1rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--accent);
+    gap: 12pt;
+    padding: 12pt 0;
+    border-bottom: 1pt solid #e2e8f0;
+}
+
+.reference-item:last-child {
+    border-bottom: none;
 }
 
 .reference-number {
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
     color: var(--secondary);
-    min-width: 1.5rem;
+    font-size: 10pt;
+    min-width: 20pt;
+}
+
+.reference-content {
+    flex: 1;
 }
 
 .reference-title {
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 0.25rem;
+    font-size: 10pt;
+    margin-bottom: 4pt;
 }
 
 .reference-link {
-    color: var(--primary-light);
-    text-decoration: none;
-    font-size: 0.9rem;
+    color: var(--text-light);
+    font-size: 8pt;
+    word-break: break-all;
 }
 
 .reference-meta {
     display: flex;
-    gap: 1rem;
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    gap: 16pt;
+    margin-top: 4pt;
+    font-size: 8pt;
+    color: var(--text-light);
 }
 
-/* Footer */
+.reference-page,
+.reference-score {
+    display: inline-flex;
+    align-items: center;
+    gap: 4pt;
+}
+
+/* =============================================================================
+   FOOTER
+   ============================================================================= */
 .report-footer {
     margin-top: auto;
     background: var(--primary);
     color: white;
-    padding: 3rem 4rem;
+    padding: 32pt 48pt;
 }
 
 .footer-decoration {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 12pt;
     opacity: 0.3;
-    margin-bottom: 2rem;
+    margin-bottom: 20pt;
 }
 
 .footer-line {
     flex-grow: 1;
-    height: 1px;
+    height: 1pt;
     background: white;
 }
 
 .footer-diamond {
-    font-size: 0.8rem;
+    font-size: 8pt;
+    color: var(--secondary);
 }
 
 .footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.footer-brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
+    text-align: center;
 }
 
 .footer-timestamp {
-    opacity: 0.6;
-    font-size: 0.9rem;
+    font-size: 9pt;
+    opacity: 0.7;
 }
 
 .footer-tagline {
     text-align: center;
-    margin-top: 2rem;
-    font-size: 0.8rem;
-    opacity: 0.4;
-    letter-spacing: 2px;
+    margin-top: 16pt;
+    font-size: 8pt;
+    opacity: 0.5;
+    letter-spacing: 3pt;
     text-transform: uppercase;
+}
+
+/* =============================================================================
+   PRINT OPTIMIZATIONS
+   ============================================================================= */
+@media print {
+    body {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .report-header,
+    .key-insight-wrapper,
+    .summary-wrapper,
+    .metric-card,
+    .recommendations-section,
+    .references-section,
+    .report-footer {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .content-section {
+        page-break-inside: avoid;
+    }
+
+    .metrics-section {
+        page-break-inside: avoid;
+    }
 }

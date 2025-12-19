@@ -11,11 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <style>
-        {
-                {
-                style_css
-            }
-        }
+        {{ style_css | safe }}
     </style>
 </head>
 
@@ -36,10 +32,9 @@
         </div>
 
         <div class="header-content">
-            <div class="brand-mark">
-                <span class="brand-icon">◆</span>
-                <span class="brand-text">PullData Report</span>
-            </div>
+            {% if data.metadata.get('classification') %}
+            <div class="classification-badge">{{ data.metadata.classification }}</div>
+            {% endif %}
 
             <h1 class="report-title">{{ data.title }}</h1>
 
@@ -51,21 +46,18 @@
             <div class="report-meta">
                 {% if data.metadata.get('author') %}
                 <div class="meta-item">
-                    <span class="meta-icon">✦</span>
-                    <span class="meta-label">Author</span>
+                    <span class="meta-label">Prepared by</span>
                     <span class="meta-value">{{ data.metadata.author }}</span>
                 </div>
                 {% endif %}
                 {% if data.metadata.get('date') or data.metadata.get('generated_at') %}
                 <div class="meta-item">
-                    <span class="meta-icon">◈</span>
                     <span class="meta-label">Date</span>
                     <span class="meta-value">{{ data.metadata.date or data.metadata.generated_at }}</span>
                 </div>
                 {% endif %}
                 {% if data.metadata.get('version') %}
                 <div class="meta-item">
-                    <span class="meta-icon">◇</span>
                     <span class="meta-label">Version</span>
                     <span class="meta-value">{{ data.metadata.version }}</span>
                 </div>
@@ -77,18 +69,27 @@
         <div class="header-accent"></div>
     </header>
 
-    <!-- Executive Summary - Hero Section -->
+    <!-- Key Insight Callout (if available) -->
+    {% if data.key_insight %}
+    <section class="key-insight-section">
+        <div class="key-insight-wrapper">
+            <div class="key-insight-icon">&#9733;</div>
+            <div class="key-insight-label">Key Insight</div>
+            <p class="key-insight-text">{{ data.key_insight }}</p>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Executive Summary -->
     <section class="summary-section">
         <div class="summary-wrapper">
             <div class="summary-badge">
-                <span class="badge-icon">★</span>
                 <span class="badge-text">Executive Summary</span>
             </div>
             <div class="summary-content">
                 <div class="summary-quote-mark">"</div>
                 <p class="summary-text">{{ data.summary }}</p>
             </div>
-            <div class="summary-decoration"></div>
         </div>
     </section>
 
@@ -96,7 +97,6 @@
     {% if data.metrics %}
     <section class="metrics-section">
         <div class="section-header">
-            <div class="section-icon">📊</div>
             <h2 class="section-title">Key Metrics</h2>
             <div class="section-line"></div>
         </div>
@@ -105,11 +105,16 @@
             {% for metric in data.metrics %}
             <div class="metric-card" style="--card-index: {{ loop.index }}">
                 <div class="metric-glow"></div>
-                {% if metric.icon %}
-                <div class="metric-icon">{{ metric.icon }}</div>
-                {% endif %}
                 <div class="metric-value">{{ metric.value }}</div>
                 <div class="metric-label">{{ metric.label }}</div>
+                {% if metric.context %}
+                <div class="metric-context">{{ metric.context }}</div>
+                {% endif %}
+                {% if metric.trend %}
+                <div class="metric-trend metric-trend-{{ metric.trend }}">
+                    {% if metric.trend == 'up' %}&#9650;{% elif metric.trend == 'down' %}&#9660;{% else %}&#9644;{% endif %}
+                </div>
+                {% endif %}
                 <div class="metric-bar"></div>
             </div>
             {% endfor %}
@@ -138,7 +143,7 @@
             <div class="subsections">
                 {% for subsection in section.subsections %}
                 <div class="subsection">
-                    <div class="subsection-marker">◆</div>
+                    <div class="subsection-marker">&#9670;</div>
                     <div class="subsection-wrapper">
                         <h3 class="subsection-heading">{{ subsection.heading }}</h3>
                         <div class="subsection-content">
@@ -153,12 +158,30 @@
         {% endfor %}
     </main>
 
-    <!-- References / Citations -->
+    <!-- Recommendations Section -->
+    {% if data.recommendations %}
+    <section class="recommendations-section">
+        <div class="recommendations-header">
+            <div class="recommendations-icon">&#10148;</div>
+            <h2 class="recommendations-title">Recommendations</h2>
+        </div>
+
+        <div class="recommendations-list">
+            {% for rec in data.recommendations %}
+            <div class="recommendation-item">
+                <div class="recommendation-number">{{ loop.index }}</div>
+                <div class="recommendation-content">{{ rec }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- References / Sources -->
     {% if data.references %}
     <section class="references-section">
         <div class="references-header">
-            <div class="references-icon">📚</div>
-            <h2 class="references-title">References & Sources</h2>
+            <h2 class="references-title">Sources</h2>
         </div>
 
         <div class="references-container">
@@ -168,20 +191,14 @@
                 <div class="reference-content">
                     <div class="reference-title">{{ ref.title }}</div>
                     {% if ref.url %}
-                    <a href="{{ ref.url }}" class="reference-link">{{ ref.url }}</a>
+                    <div class="reference-link">{{ ref.url }}</div>
                     {% endif %}
                     <div class="reference-meta">
                         {% if ref.page %}
-                        <span class="reference-page">
-                            <span class="page-icon">📄</span>
-                            Page {{ ref.page }}
-                        </span>
+                        <span class="reference-page">Page {{ ref.page }}</span>
                         {% endif %}
                         {% if ref.relevance_score %}
-                        <span class="reference-score">
-                            <span class="score-icon">⚡</span>
-                            {{ "%.0f"|format(ref.relevance_score * 100) }}% relevance
-                        </span>
+                        <span class="reference-score">{{ "%.0f"|format(ref.relevance_score * 100) }}% relevance</span>
                         {% endif %}
                     </div>
                 </div>
@@ -195,21 +212,17 @@
     <footer class="report-footer">
         <div class="footer-decoration">
             <div class="footer-line"></div>
-            <div class="footer-diamond">◆</div>
+            <div class="footer-diamond">&#9670;</div>
             <div class="footer-line"></div>
         </div>
 
         <div class="footer-content">
-            <div class="footer-brand">
-                <span class="footer-logo">⚡</span>
-                <span class="footer-name">Generated by PullData Intelligence</span>
-            </div>
             {% if data.metadata.get('generated_at') %}
-            <div class="footer-timestamp">{{ data.metadata.generated_at }}</div>
+            <div class="footer-timestamp">Generated {{ data.metadata.generated_at }}</div>
             {% endif %}
         </div>
 
-        <div class="footer-tagline">AI-Powered Document Intelligence</div>
+        <div class="footer-tagline">Confidential &bull; Internal Use Only</div>
     </footer>
 </body>
 

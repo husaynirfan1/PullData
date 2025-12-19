@@ -10,7 +10,7 @@ import json
 import os
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 # Fix Windows fontconfig warning
 if os.name == 'nt':  # Windows only
@@ -20,7 +20,22 @@ if os.name == 'nt':  # Windows only
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from pulldata.synthesis.base import FormatConfig, FormatterError, OutputData, OutputFormatter
-from pulldata.synthesis.report_models import ReportData, get_structuring_prompt
+from pulldata.synthesis.report_models import (
+    ReportData,
+    MetricItem,
+    ReportSection,
+    SIMPLE_STRUCTURING_PROMPT,
+    CHAIN_TITLE_PROMPT,
+    CHAIN_SUBTITLE_PROMPT,
+    CHAIN_SUMMARY_PROMPT,
+    CHAIN_KEY_INSIGHT_PROMPT,
+    CHAIN_METRICS_PROMPT,
+    CHAIN_SECTION_PROMPT,
+    CHAIN_RECOMMENDATIONS_PROMPT,
+    get_structuring_prompt,
+    get_refinement_prompt,
+    get_quick_polish_prompt,
+)
 
 try:
     from weasyprint import HTML, CSS
@@ -90,6 +105,9 @@ class StyledPDFFormatter(OutputFormatter):
         style: Literal["executive", "modernist", "academic"] = "executive",
         llm: Optional[Any] = None,
         enable_markdown: bool = True,
+        executive_mode: bool = True,
+        auto_polish: bool = True,
+        use_llm_structuring: bool = True,
     ):
         """Initialize styled PDF formatter.
 
@@ -98,8 +116,14 @@ class StyledPDFFormatter(OutputFormatter):
             style: Visual style to use ("executive", "modernist", or "academic")
             llm: Optional LLM instance for data structuring
             enable_markdown: Enable markdown processing in content
+            executive_mode: Use executive-grade prompts for VP-ready output (default True)
+            auto_polish: Automatically apply LLM polish pass for maximum quality (default True)
+            use_llm_structuring: Use LLM to structure content (set False if LLM has issues with JSON output)
         """
         super().__init__(config)
+        self.executive_mode = executive_mode
+        self.auto_polish = auto_polish
+        self.use_llm_structuring = use_llm_structuring
 
         if not WEASYPRINT_AVAILABLE:
             raise FormatterError(
@@ -222,16 +246,21 @@ class StyledPDFFormatter(OutputFormatter):
         raw_text: str,
         query: Optional[str] = None,
         sources: Optional[list] = None,
+        apply_polish: Optional[bool] = None,
     ) -> ReportData:
         """Use LLM to structure raw text into ReportData.
+
+        This method uses executive-grade prompts to create VP-ready content,
+        with an optional second-pass polish for maximum quality.
 
         Args:
             raw_text: Raw text from RAG retrieval
             query: Original user query (optional)
             sources: Source documents (optional)
+            apply_polish: Override auto_polish setting for this call
 
         Returns:
-            Structured ReportData
+            Structured and polished ReportData
 
         Raises:
             FormatterError: If LLM is not available or structuring fails
@@ -251,39 +280,38 @@ class StyledPDFFormatter(OutputFormatter):
             )
 
         try:
-            # Build prompt
-            system_prompt = get_structuring_prompt(include_schema=True)
+            # Use simple prompt optimized for smaller models (1.7B-7B)
+            # This has a concrete JSON example which helps smaller models
+            system_prompt = SIMPLE_STRUCTURING_PROMPT
 
-            # Build user message
-            user_message = f"**Raw Text:**\n{raw_text}\n\n"
+            # Build simplified user message for better JSON compliance
+            user_parts = []
             if query:
-                user_message = f"**Query:** {query}\n\n" + user_message
-            if sources:
-                user_message += f"\n**Sources:** {len(sources)} documents retrieved\n"
+                user_parts.append(f"Topic: {query}")
+            user_parts.append(f"\nContent:\n{raw_text[:4000]}")  # Limit content for smaller models
+            user_parts.append("\nReturn ONLY a JSON object with the report. Start with {")
+            user_parts.append("\n/no_think")  # Disable thinking for Qwen models
 
-            user_message += "\nStructure this into the ReportData JSON format."
+            user_message = "\n".join(user_parts)
 
             # Generate structured data
             response = self.llm.generate(
                 prompt=user_message,
                 system_prompt=system_prompt,
-                temperature=0.3,  # Lower temperature for structured output
-                max_tokens=4000,
+                temperature=0.3,  # Lower temp for more reliable JSON
+                max_tokens=4000,  # Reduced for faster response
             )
 
-            # Parse JSON response
-            json_str = response.text.strip()
-
-            # Remove markdown code blocks if present
-            if json_str.startswith("```"):
-                json_str = json_str.split("```")[1]
-                if json_str.startswith("json"):
-                    json_str = json_str[4:]
-                json_str = json_str.strip()
-
-            # Parse and validate
+            # Parse JSON response - handle thinking blocks
+            response_text = response.text if hasattr(response, 'text') else str(response)
+            json_str = self._extract_json(response_text)
             data_dict = json.loads(json_str)
             report_data = ReportData(**data_dict)
+
+            # Apply polish pass if enabled
+            should_polish = apply_polish if apply_polish is not None else self.auto_polish
+            if should_polish:
+                report_data = self.polish_report(report_data)
 
             return report_data
 
@@ -300,25 +328,439 @@ class StyledPDFFormatter(OutputFormatter):
                 details={"error": str(e)},
             ) from e
 
+    def polish_report(self, report_data: ReportData) -> ReportData:
+        """Apply LLM polish pass to elevate report quality.
+
+        This second-pass refinement ensures the report is truly VP-ready
+        by improving titles, strengthening language, and enhancing impact.
+
+        Args:
+            report_data: The structured report to polish
+
+        Returns:
+            Polished ReportData with elevated content
+
+        Raises:
+            FormatterError: If LLM is not available or polishing fails
+        """
+        if not self.llm:
+            return report_data  # Return as-is if no LLM
+
+        try:
+            # Convert to JSON for the polish prompt
+            report_json = report_data.model_dump_json(indent=2)
+
+            # Use quick polish for efficiency - add /no_think for Qwen models
+            polish_prompt = get_quick_polish_prompt(report_json) + "\n\n/no_think"
+
+            # Generate polished version
+            response = self.llm.generate(
+                prompt=polish_prompt,
+                system_prompt="Return ONLY valid JSON. No thinking, no markdown. Start with {",
+                temperature=0.3,
+                max_tokens=4000,
+            )
+            
+            # Parse polished JSON
+            json_str = self._extract_json(response.text)
+            polished_dict = json.loads(json_str)
+            polished_data = ReportData(**polished_dict)
+
+            return polished_data
+
+        except Exception as e:
+            # If polish fails, return original data rather than failing entirely
+            import logging
+            logging.warning(f"Polish pass failed, using original: {e}")
+            return report_data
+
+    # =========================================================================
+    # CHAIN-BASED STRUCTURING - Multiple simple LLM calls for small models
+    # =========================================================================
+
+    def _chain_call(self, prompt: str, max_tokens: int = 500) -> str:
+        """Make a single chain LLM call returning plain text.
+
+        Args:
+            prompt: The prompt to send (already formatted)
+            max_tokens: Maximum tokens for response
+
+        Returns:
+            Plain text response, cleaned up
+        """
+        # Add /no_think for Qwen models
+        full_prompt = prompt + "\n/no_think"
+
+        response = self.llm.generate(
+            prompt=full_prompt,
+            system_prompt="Answer directly and concisely. No explanations.",
+            temperature=0.3,
+            max_tokens=max_tokens,
+        )
+
+        # Clean response
+        text = response.text if hasattr(response, 'text') else str(response)
+
+        # Remove think blocks
+        import re
+        text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
+        text = re.sub(r'<think>.*', '', text, flags=re.DOTALL)
+
+        return text.strip()
+
+    def structure_with_chain(
+        self,
+        raw_text: str,
+        query: Optional[str] = None,
+        sources: Optional[list] = None,
+    ) -> ReportData:
+        """Structure content using multiple simple LLM calls.
+
+        This approach works better with small models (1.7B-7B) by:
+        1. Making independent calls for each component
+        2. Each call returns plain text (not JSON)
+        3. Pydantic validates the assembled data
+
+        Args:
+            raw_text: Raw text content to structure
+            query: Original user query
+            sources: Source documents
+
+        Returns:
+            Validated ReportData instance
+        """
+        import logging
+        from datetime import datetime
+
+        # Limit content for small models
+        content = raw_text[:3000]
+
+        logging.info("Starting chain-based PDF structuring...")
+
+        # Call 1: Get title
+        logging.debug("Chain call 1: Getting title...")
+        title = self._chain_call(
+            CHAIN_TITLE_PROMPT.format(content=content[:1500]),
+            max_tokens=100
+        )
+        # Clean up title
+        title = title.replace('"', '').replace("'", "").strip()
+        if not title or len(title) < 5:
+            title = query or "Analysis Report"
+
+        # Call 2: Get subtitle
+        logging.debug("Chain call 2: Getting subtitle...")
+        subtitle = self._chain_call(
+            CHAIN_SUBTITLE_PROMPT.format(content=content[:1000]),
+            max_tokens=80
+        )
+        subtitle = subtitle.replace('"', '').replace("'", "").strip()
+
+        # Call 3: Get summary
+        logging.debug("Chain call 3: Getting summary...")
+        summary = self._chain_call(
+            CHAIN_SUMMARY_PROMPT.format(content=content),
+            max_tokens=300
+        )
+        if not summary or len(summary) < 20:
+            summary = content[:300] + "..."
+
+        # Call 4: Get key insight
+        logging.debug("Chain call 4: Getting key insight...")
+        key_insight = self._chain_call(
+            CHAIN_KEY_INSIGHT_PROMPT.format(content=content[:1500]),
+            max_tokens=150
+        )
+
+        # Call 5: Get metrics
+        logging.debug("Chain call 5: Getting metrics...")
+        metrics_text = self._chain_call(
+            CHAIN_METRICS_PROMPT.format(content=content),
+            max_tokens=400
+        )
+        metrics = self._parse_metrics(metrics_text)
+
+        # Call 6: Get main section
+        logging.debug("Chain call 6: Getting main section...")
+        section_text = self._chain_call(
+            CHAIN_SECTION_PROMPT.format(
+                topic=query or "Key Findings",
+                content=content
+            ),
+            max_tokens=800
+        )
+        sections = self._parse_sections(section_text, content)
+
+        # Call 7: Get recommendations
+        logging.debug("Chain call 7: Getting recommendations...")
+        recs_text = self._chain_call(
+            CHAIN_RECOMMENDATIONS_PROMPT.format(content=content),
+            max_tokens=300
+        )
+        recommendations = self._parse_recommendations(recs_text)
+
+        # Build references from sources
+        references = []
+        if sources:
+            for src in sources[:5]:
+                if isinstance(src, dict):
+                    references.append({
+                        "title": src.get("document_id", "Source"),
+                        "url": src.get("url"),
+                        "page": src.get("page_number"),
+                        "relevance_score": src.get("score"),
+                    })
+
+        # Build metadata
+        metadata = {
+            "generated_at": datetime.now().strftime("%B %d, %Y"),
+            "generation_method": "chain",
+        }
+
+        logging.info("Chain structuring complete - assembling ReportData")
+
+        # Assemble and validate with Pydantic
+        return ReportData(
+            title=title,
+            subtitle=subtitle,
+            summary=summary,
+            key_insight=key_insight,
+            metrics=metrics,
+            sections=sections,
+            recommendations=recommendations,
+            references=references,
+            metadata=metadata,
+        )
+
+    def _parse_metrics(self, text: str) -> List[dict]:
+        """Parse metrics from plain text response.
+
+        Expected format:
+        Label: Value
+        Label2: Value2
+        """
+        metrics = []
+        for line in text.strip().split('\n'):
+            line = line.strip()
+            if not line or ':' not in line:
+                continue
+            # Remove bullet points
+            line = line.lstrip('•-*').strip()
+            if ':' in line:
+                parts = line.split(':', 1)
+                if len(parts) == 2:
+                    label = parts[0].strip()
+                    value = parts[1].strip()
+                    if label and value:
+                        metrics.append({
+                            "label": label,
+                            "value": value,
+                            "trend": None,
+                            "context": None,
+                        })
+        return metrics[:6]  # Limit to 6 metrics
+
+    def _parse_sections(self, text: str, fallback_content: str) -> List[dict]:
+        """Parse sections from plain text response.
+
+        Expected format:
+        HEADING: [heading]
+        CONTENT:
+        [paragraphs]
+        """
+        sections = []
+
+        # Try to parse HEADING:/CONTENT: format
+        if 'HEADING:' in text.upper():
+            import re
+            heading_match = re.search(r'HEADING:\s*(.+?)(?:\n|CONTENT:)', text, re.IGNORECASE)
+            content_match = re.search(r'CONTENT:\s*(.+)', text, re.IGNORECASE | re.DOTALL)
+
+            heading = heading_match.group(1).strip() if heading_match else "Key Findings"
+            content = content_match.group(1).strip() if content_match else text
+
+            sections.append({
+                "heading": heading,
+                "content": content,
+                "subsections": [],
+            })
+        else:
+            # Fallback: use the whole response as content
+            sections.append({
+                "heading": "Key Findings",
+                "content": text if text else fallback_content[:1000],
+                "subsections": [],
+            })
+
+        return sections
+
+    def _parse_recommendations(self, text: str) -> List[str]:
+        """Parse recommendations from plain text response."""
+        recs = []
+        for line in text.strip().split('\n'):
+            line = line.strip()
+            if not line:
+                continue
+            # Remove numbering and bullets
+            line = line.lstrip('0123456789.•-*) ').strip()
+            if line and len(line) > 10:
+                recs.append(line)
+        return recs[:5]  # Limit to 5 recommendations
+
+    def _build_structuring_prompt(
+        self,
+        raw_text: str,
+        query: Optional[str] = None,
+        sources: Optional[list] = None,
+    ) -> str:
+        """Build the user message for structuring, optimized for executive output.
+
+        Args:
+            raw_text: Raw text content
+            query: User's original query
+            sources: Source documents
+
+        Returns:
+            Formatted user message
+        """
+        parts = []
+
+        # Include topic/context without polluting title with "Query:"
+        if query:
+            parts.append(f"**Topic/Focus:** {query}")
+            parts.append("(Create a compelling headline-style title, NOT 'Query: {query}')")
+
+        parts.append(f"\n**Content to Structure:**\n{raw_text}")
+
+        if sources:
+            source_info = []
+            for i, src in enumerate(sources[:5], 1):  # Limit to top 5
+                if isinstance(src, dict):
+                    title = src.get("document_id", src.get("title", f"Source {i}"))
+                    score = src.get("score", src.get("relevance_score"))
+                    page = src.get("page_number", src.get("page"))
+                    info = f"  {i}. {title}"
+                    if score:
+                        info += f" (relevance: {score:.0%})"
+                    if page:
+                        info += f" [page {page}]"
+                    source_info.append(info)
+            if source_info:
+                parts.append(f"\n**Source Documents:**\n" + "\n".join(source_info))
+
+        parts.append("\n**Instructions:** Create a polished, executive-ready report. "
+                    "The title must be compelling and professional - NO 'Query:' prefix.")
+
+        return "\n".join(parts)
+
+    def _extract_json(self, text: str) -> str:
+        """Extract JSON from LLM response, handling various formats.
+
+        Handles:
+        - Markdown code blocks (```json ... ```)
+        - LLM thinking blocks (<think>...</think>)
+        - Raw JSON with surrounding text
+        - Multiple JSON objects (takes the first complete one)
+
+        Args:
+            text: Raw LLM response text
+
+        Returns:
+            Cleaned JSON string
+
+        Raises:
+            ValueError: If no valid JSON object can be found
+        """
+        import re
+
+        json_str = text.strip()
+
+        # Remove <think>...</think> blocks (some LLMs include reasoning)
+        # Handle both complete and incomplete think blocks
+        json_str = re.sub(r'<think>.*?</think>', '', json_str, flags=re.DOTALL)
+        # Also handle incomplete <think> blocks (no closing tag)
+        json_str = re.sub(r'<think>.*', '', json_str, flags=re.DOTALL)
+        json_str = json_str.strip()
+
+        # Remove markdown code blocks if present
+        if "```" in json_str:
+            # Try to extract content from code blocks
+            code_block_match = re.search(r'```(?:json|JSON)?\s*([\s\S]*?)```', json_str)
+            if code_block_match:
+                json_str = code_block_match.group(1).strip()
+
+        # If still not starting with {, find the JSON object
+        if not json_str.startswith("{"):
+            # Find the first { and matching }
+            start = json_str.find("{")
+            if start != -1:
+                # Count braces to find the matching closing brace
+                brace_count = 0
+                end = start
+                for i, char in enumerate(json_str[start:], start):
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            end = i + 1
+                            break
+                json_str = json_str[start:end]
+
+        # Final cleanup - remove any trailing text after the JSON
+        if json_str.startswith("{"):
+            brace_count = 0
+            for i, char in enumerate(json_str):
+                if char == '{':
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        json_str = json_str[:i+1]
+                        break
+
+        if not json_str or not json_str.startswith("{"):
+            raise ValueError(f"No valid JSON object found in response. Got: {text[:200]}...")
+
+        return json_str
+
     def _convert_to_report_data(self, data: OutputData) -> ReportData:
         """Convert standard OutputData to ReportData format.
 
-        This is a fallback conversion when LLM structuring is not used.
+        If LLM is available, uses it to create executive-grade content.
+        Otherwise falls back to basic conversion.
 
         Args:
             data: Standard output data
 
         Returns:
-            ReportData instance
+            ReportData instance (polished if LLM available)
         """
         from datetime import datetime
 
-        # Extract metrics from metadata if available
-        metrics = []
-        if "metrics" in data.metadata and isinstance(data.metadata["metrics"], list):
-            metrics = data.metadata["metrics"]
+        # If LLM is available and enabled, use chain-based structuring
+        # Chain method makes multiple simple calls - works better with small models
+        if self.llm and data.content and self.use_llm_structuring:
+            try:
+                # Get the query from metadata if available
+                query = data.metadata.get("query") if data.metadata else None
 
-        # Convert sections
+                return self.structure_with_chain(
+                    raw_text=data.content,
+                    query=query or data.title,
+                    sources=data.sources,
+                )
+            except Exception as e:
+                import logging
+                logging.warning(f"Chain structuring failed, using fallback: {e}")
+
+        # Fallback: basic conversion without LLM - still creates professional output
+        metrics = []
+        if data.metadata and "metrics" in data.metadata:
+            if isinstance(data.metadata["metrics"], list):
+                metrics = data.metadata["metrics"]
+
+        # Convert sections - split content into logical paragraphs if no sections
         sections = []
         if data.sections:
             for section in data.sections:
@@ -328,12 +770,36 @@ class StyledPDFFormatter(OutputFormatter):
                     "subsections": [],
                 })
         elif data.content:
-            # If no sections, use content as a single section
-            sections.append({
-                "heading": "Overview",
-                "content": data.content,
-                "subsections": [],
-            })
+            # Try to create a more structured layout from raw content
+            content = data.content
+            # If content has multiple paragraphs, try to structure them
+            paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
+            if len(paragraphs) > 2:
+                # First paragraph as overview
+                sections.append({
+                    "heading": "Overview",
+                    "content": paragraphs[0],
+                    "subsections": [],
+                })
+                # Middle paragraphs as analysis
+                sections.append({
+                    "heading": "Analysis",
+                    "content": '\n\n'.join(paragraphs[1:-1]) if len(paragraphs) > 2 else paragraphs[1],
+                    "subsections": [],
+                })
+                # Last paragraph as conclusion
+                if len(paragraphs) > 2:
+                    sections.append({
+                        "heading": "Conclusion",
+                        "content": paragraphs[-1],
+                        "subsections": [],
+                    })
+            else:
+                sections.append({
+                    "heading": "Key Findings",
+                    "content": content,
+                    "subsections": [],
+                })
 
         # Convert sources to references
         references = []
@@ -348,12 +814,37 @@ class StyledPDFFormatter(OutputFormatter):
         # Build metadata
         metadata = data.metadata.copy() if data.metadata else {}
         if "generated_at" not in metadata:
-            metadata["generated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            metadata["generated_at"] = datetime.now().strftime("%B %d, %Y")
+
+        # Create a professional title from the query
+        title = data.title or ""
+        # Remove common prefixes and clean up
+        for prefix in ["query:", "question:", "what is", "what are", "how to", "explain"]:
+            if title.lower().startswith(prefix):
+                title = title[len(prefix):].strip()
+                break
+        # Capitalize properly
+        if title:
+            title = title.strip('?').strip()
+            # Title case but preserve acronyms
+            words = title.split()
+            title = ' '.join(w if w.isupper() else w.title() for w in words)
+
+        # Create a summary from the first part of content
+        summary = ""
+        if data.content:
+            # Take first 2-3 sentences
+            sentences = data.content.replace('\n', ' ').split('. ')
+            summary = '. '.join(sentences[:3])
+            if len(summary) > 500:
+                summary = summary[:497] + "..."
+            elif not summary.endswith('.'):
+                summary += '.'
 
         return ReportData(
-            title=data.title,
-            subtitle=metadata.get("subtitle"),
-            summary=data.content[:500] if data.content else "No summary available.",
+            title=title or "Strategic Analysis Report",
+            subtitle=metadata.get("subtitle", "Comprehensive Analysis & Insights"),
+            summary=summary or "Analysis results detailed below.",
             metrics=metrics,
             sections=sections,
             references=references,
